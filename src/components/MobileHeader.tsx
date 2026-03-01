@@ -131,6 +131,14 @@ export function MobileHeader({
                     </SettingsDialog>
                 )}
 
+                {!isOperator && (
+                    <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-white">
+                        <Link href="/login">
+                            <Users className="w-5 h-5" />
+                        </Link>
+                    </Button>
+                )}
+
                 {isOperator && (
                     <Button
                         variant="ghost"

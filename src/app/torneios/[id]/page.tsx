@@ -73,8 +73,24 @@ export default async function TorneioPage({ params }: { params: Promise<{ id: st
                 } else {
                     const semiMatches = closedMatches.filter((m: any) => m.phase === maxPhase - 1)
                     if (semiMatches.length > 0) {
-                        const semiLosers = semiMatches.map((m: any) => m.winner_id === m.player_a_id ? m.player_b : m.player_a)
-                        if (semiLosers.length > 0) thirdPlace = semiLosers[0]
+                        const semiLosersStats = semiMatches.map((m: any) => {
+                            const isA = m.winner_id === m.player_b_id
+                            return {
+                                player: isA ? m.player_a : m.player_b,
+                                framesWon: isA ? m.score_a : m.score_b,
+                                framesLost: isA ? m.score_b : m.score_a,
+                                diff: (isA ? m.score_a : m.score_b) - (isA ? m.score_b : m.score_a)
+                            }
+                        }).filter(stat => stat.player != null)
+
+                        if (semiLosersStats.length > 0) {
+                            // Sort by framesWon (desc), then by diff (desc)
+                            semiLosersStats.sort((a, b) => {
+                                if (b.framesWon !== a.framesWon) return b.framesWon - a.framesWon
+                                return b.diff - a.diff
+                            })
+                            thirdPlace = semiLosersStats[0].player
+                        }
                     }
                 }
             }

@@ -271,16 +271,30 @@ export async function closeTournament(tournamentId: string) {
         thirdPlaceId = thirdMatch.winner_id
     } else {
         // Se não tem disputa de 3º, pegamos os perdedores da semi-final (fase final - 1)
-        // E poderíamos desempatar por algum critério, mas aqui vamos pegar o primeiro disponível ou nulo
+        // E desempatamos por quem venceu mais partidas na semi-final, depois pelo saldo de vitórias
         const { data: semiMatches } = await supabase
             .from('matches')
-            .select('player_a_id, player_b_id, winner_id')
+            .select('player_a_id, player_b_id, winner_id, score_a, score_b')
             .eq('tournament_id', tournamentId)
             .eq('phase', (finalMatch?.phase || 1) - 1)
 
         if (semiMatches && semiMatches.length > 0) {
-            const semiLosers = semiMatches.map(m => m.winner_id === m.player_a_id ? m.player_b_id : m.player_a_id)
-            thirdPlaceId = semiLosers[0] // Critério simples: primeiro perdedor da semi
+            const semiLosersStats = semiMatches.map(m => {
+                const isA = m.winner_id === m.player_b_id
+                return {
+                    playerId: isA ? m.player_a_id : m.player_b_id,
+                    framesWon: isA ? m.score_a : m.score_b,
+                    diff: (isA ? m.score_a : m.score_b) - (isA ? m.score_b : m.score_a)
+                }
+            }).filter(stat => stat.playerId != null)
+
+            if (semiLosersStats.length > 0) {
+                semiLosersStats.sort((a, b) => {
+                    if (b.framesWon !== a.framesWon) return b.framesWon - a.framesWon
+                    return b.diff - a.diff
+                })
+                thirdPlaceId = semiLosersStats[0].playerId
+            }
         }
     }
 

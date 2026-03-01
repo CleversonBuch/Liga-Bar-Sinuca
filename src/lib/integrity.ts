@@ -101,21 +101,51 @@ export async function recomputeRankings(supabase: SupabaseClient) {
 
         let winnerId = tournament.winner_id
         let runnerUpId = null
+        let thirdPlaceId = null
 
-        // Calculate runnerUpId from the final match
-        const { data: finalMatch } = await supabase
+        // Calculate runnerUpId and thirdPlaceId from the matches
+        const { data: closedTournamentMatches } = await supabase
             .from('matches')
-            .select('player_a_id, player_b_id, winner_id')
+            .select('id, phase, player_a_id, player_b_id, winner_id, score_a, score_b')
             .eq('tournament_id', tournament.id)
             .not('winner_id', 'is', null)
-            .order('phase', { ascending: false })
-            .limit(1)
-            .single()
 
-        if (finalMatch) {
-            winnerId = finalMatch.winner_id
-            runnerUpId = finalMatch.player_a_id === winnerId ? finalMatch.player_b_id : finalMatch.player_a_id
+        if (closedTournamentMatches && closedTournamentMatches.length > 0) {
+            const maxPhase = Math.max(...closedTournamentMatches.map(m => m.phase))
+            const finalMatch = closedTournamentMatches.find(m => m.phase === maxPhase)
+
+            if (finalMatch) {
+                winnerId = finalMatch.winner_id
+                runnerUpId = finalMatch.player_a_id === winnerId ? finalMatch.player_b_id : finalMatch.player_a_id
+
+                const thirdMatch = closedTournamentMatches.find(m => m.phase === maxPhase && m.id !== finalMatch.id)
+                if (thirdMatch) {
+                    thirdPlaceId = thirdMatch.winner_id
+                } else {
+                    const semiMatches = closedTournamentMatches.filter(m => m.phase === maxPhase - 1)
+                    if (semiMatches.length > 0) {
+                        const semiLosersStats = semiMatches.map(m => {
+                            const isA = m.winner_id === m.player_b_id
+                            return {
+                                playerId: isA ? m.player_a_id : m.player_b_id,
+                                framesWon: isA ? m.score_a : m.score_b,
+                                diff: (isA ? m.score_a : m.score_b) - (isA ? m.score_b : m.score_a)
+                            }
+                        }).filter(stat => stat.playerId != null)
+
+                        if (semiLosersStats.length > 0) {
+                            semiLosersStats.sort((a, b) => {
+                                if (b.framesWon !== a.framesWon) return b.framesWon - a.framesWon
+                                return b.diff - a.diff
+                            })
+                            thirdPlaceId = semiLosersStats[0].playerId
+                        }
+                    }
+                }
+            }
         }
+
+        const pt3 = isB8 ? 50 : 40   // Terceiro
 
         // Buscar todos os participantes desse torneio
         const { data: allMatches } = await supabase
@@ -135,6 +165,7 @@ export async function recomputeRankings(supabase: SupabaseClient) {
 
             if (pId === winnerId) earnedPoints += pt1
             else if (pId === runnerUpId) earnedPoints += pt2
+            else if (pId === thirdPlaceId) earnedPoints += pt3
 
             const key = `${pId}_${tournament.modality}_${year}_${month}`
             if (!rankingMap[key]) {

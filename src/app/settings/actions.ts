@@ -156,30 +156,49 @@ export async function resetSystemData() {
         const { error: matchesError } = await supabase
             .from('matches')
             .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000') // Deleta tudo
+            .neq('id', '00000000-0000-0000-0000-000000000000')
 
         if (matchesError) throw new Error(`Erro ao limpar partidas: ${matchesError.message}`)
 
-        // 2. Deletar todos os torneios
+        // 2. Deletar todos os rankings (pontuações mensais)
+        const { error: rankingsError } = await supabase
+            .from('rankings')
+            .delete()
+            .neq('id', 0)
+
+        if (rankingsError) throw new Error(`Erro ao limpar rankings: ${rankingsError.message}`)
+
+        // 3. Deletar vínculos de jogadores com torneios
+        const { error: tpError } = await supabase
+            .from('tournament_players')
+            .delete()
+            .neq('id', 0)
+
+        if (tpError) throw new Error(`Erro ao limpar participações: ${tpError.message}`)
+
+        // 4. Deletar todos os torneios
         const { error: tournamentsError } = await supabase
             .from('tournaments')
             .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000') // Deleta tudo
+            .neq('id', '00000000-0000-0000-0000-000000000000')
 
         if (tournamentsError) throw new Error(`Erro ao limpar torneios: ${tournamentsError.message}`)
 
-        // 3. Resetar estatísticas de jogadores (vitórias e partidas)
+        // 5. Resetar estatísticas de jogadores (vitórias, partidas, títulos e ganhos)
         const { error: playersError } = await supabase
             .from('players')
             .update({
                 wins: 0,
-                matches_played: 0
+                matches_played: 0,
+                titles: 0,
+                total_earnings: 0
             })
-            .neq('id', '00000000-0000-0000-0000-000000000000') // Atualiza todos
+            .neq('id', '00000000-0000-0000-0000-000000000000')
 
         if (playersError) throw new Error(`Erro ao resetar jogadores: ${playersError.message}`)
 
         revalidatePath('/', 'layout')
+        revalidatePath('/ranking')
         return { success: true }
     } catch (err: any) {
         console.error("Erro no Reset de Sistema:", err)

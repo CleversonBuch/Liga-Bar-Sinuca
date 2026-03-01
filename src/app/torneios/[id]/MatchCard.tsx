@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner'
 import { Trophy, Clock, Swords, RotateCcw, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ConfirmModal } from '@/components/ConfirmModal'
 
 type Player = { id: string; name: string; nickname?: string }
 type Table = { id: string; number: number; name?: string; status?: string }
@@ -28,6 +29,7 @@ type Match = {
 
 export function MatchCard({ match, allTables, isOperator, isSuperAdmin }: { match: Match, allTables: Table[], isOperator: boolean, isSuperAdmin?: boolean }) {
     const [loading, setLoading] = useState(false)
+    const [confirmId, setConfirmId] = useState<string | null>(null) // 'winner_a', 'winner_b', 'reset', 'delete'
 
     const isFinished = !!match.winner || !!match.finished_at
     const isWaiting = !isFinished && (!match.player_a || !match.player_b) && !match.is_bye
@@ -42,18 +44,18 @@ export function MatchCard({ match, allTables, isOperator, isSuperAdmin }: { matc
     }
 
     async function handleSetWinner(playerId: string) {
-        if (!window.confirm('Confirmar este jogador como vencedor da partida?')) return
         setLoading(true)
         const res = await finishMatch(match.id, playerId, match.tournament_id)
         setLoading(false)
-        if (res.success) toast.success('Resultado salvo!')
+        setConfirmId(null)
+        if (res.success) toast.success('Vitória confirmada!')
     }
 
     async function handleReset() {
-        if (!window.confirm('CUIDADO: Deseja realmente RESETAR esta partida? Os pontos de vitória/derrota serão revertidos.')) return
         setLoading(true)
         const res = await resetMatch(match.id, match.tournament_id)
         setLoading(false)
+        setConfirmId(null)
         if (res.success) {
             toast.success('Partida resetada.')
         } else {
@@ -62,10 +64,10 @@ export function MatchCard({ match, allTables, isOperator, isSuperAdmin }: { matc
     }
 
     async function handleDelete() {
-        if (!window.confirm('CUIDADO MÁXIMO: Apagar esta partida do banco de dados? Isso pode quebrar a numeração de fases.')) return
         setLoading(true)
         const res = await deleteMatch(match.id, match.tournament_id)
         setLoading(false)
+        setConfirmId(null)
         if (res.success) {
             toast.success('Partida apagada.')
         } else {
@@ -117,11 +119,11 @@ export function MatchCard({ match, allTables, isOperator, isSuperAdmin }: { matc
                 {isSuperAdmin && (
                     <div className="flex items-center gap-1.5 ml-2">
                         {isFinished && (
-                            <Button size="icon" variant="destructive" className="w-7 h-7 rounded-full shadow-lg opacity-60 hover:opacity-100" onClick={handleReset} disabled={loading} title="Resetar Partida">
+                            <Button size="icon" variant="destructive" className="w-7 h-7 rounded-full shadow-lg opacity-60 hover:opacity-100" onClick={() => setConfirmId('reset')} disabled={loading} title="Resetar Partida">
                                 <RotateCcw className="w-3 h-3" />
                             </Button>
                         )}
-                        <Button size="icon" variant="destructive" className="w-7 h-7 rounded-full shadow-lg opacity-60 hover:opacity-100 bg-red-950/50 text-red-400 hover:bg-red-900 border border-red-900/50" onClick={handleDelete} disabled={loading} title="Deletar Partida">
+                        <Button size="icon" variant="destructive" className="w-7 h-7 rounded-full shadow-lg opacity-60 hover:opacity-100 bg-red-950/50 text-red-400 hover:bg-red-900 border border-red-900/50" onClick={() => setConfirmId('delete')} disabled={loading} title="Deletar Partida">
                             <Trash2 className="w-3 h-3" />
                         </Button>
                     </div>
@@ -154,7 +156,7 @@ export function MatchCard({ match, allTables, isOperator, isSuperAdmin }: { matc
 
                     <div className="flex items-center gap-2 shrink-0">
                         {!isFinished && isOperator && match.player_a && !match.is_bye && (
-                            <Button size="sm" variant="ghost" onClick={() => handleSetWinner(match.player_a!.id)} disabled={loading} className="h-9 px-4 md:h-10 md:px-5 text-[10px] md:text-xs font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-emerald-950 border border-emerald-500/20 transition-all rounded-xl">
+                            <Button size="sm" variant="ghost" onClick={() => setConfirmId('winner_a')} disabled={loading} className="h-9 px-4 md:h-10 md:px-5 text-[10px] md:text-xs font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-emerald-950 border border-emerald-500/20 transition-all rounded-xl">
                                 VENCEU
                             </Button>
                         )}
@@ -187,7 +189,7 @@ export function MatchCard({ match, allTables, isOperator, isSuperAdmin }: { matc
 
                         <div className="flex items-center gap-2 shrink-0">
                             {!isFinished && isOperator && match.player_b && (
-                                <Button size="sm" variant="ghost" onClick={() => handleSetWinner(match.player_b!.id)} disabled={loading} className="h-9 px-4 md:h-10 md:px-5 text-[10px] md:text-xs font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-emerald-950 border border-emerald-500/20 transition-all rounded-xl">
+                                <Button size="sm" variant="ghost" onClick={() => setConfirmId('winner_b')} disabled={loading} className="h-9 px-4 md:h-10 md:px-5 text-[10px] md:text-xs font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-emerald-950 border border-emerald-500/20 transition-all rounded-xl">
                                     VENCEU
                                 </Button>
                             )}
@@ -229,6 +231,37 @@ export function MatchCard({ match, allTables, isOperator, isSuperAdmin }: { matc
                     )}
                 </div>
             )}
+
+            {/* Confirmation Modals */}
+            <ConfirmModal
+                isOpen={confirmId === 'winner_a' || confirmId === 'winner_b'}
+                onClose={() => setConfirmId(null)}
+                onConfirm={() => handleSetWinner(confirmId === 'winner_a' ? match.player_a!.id : match.player_b!.id)}
+                title="Confirmar Vitória"
+                description={`Deseja declarar ${confirmId === 'winner_a' ? match.player_a?.name : match.player_b?.name} como vencedor desta partida?`}
+                variant="success"
+                loading={loading}
+            />
+
+            <ConfirmModal
+                isOpen={confirmId === 'reset'}
+                onClose={() => setConfirmId(null)}
+                onConfirm={handleReset}
+                title="Resetar Partida"
+                description="Os pontos de vitória e derrota serão revertidos. Esta ação não pode ser desfeita facilmente."
+                variant="destructive"
+                loading={loading}
+            />
+
+            <ConfirmModal
+                isOpen={confirmId === 'delete'}
+                onClose={() => setConfirmId(null)}
+                onConfirm={handleDelete}
+                title="Apagar do Banco"
+                description="CUIDADO: Esta partida será removida permanentemente. Isso pode quebrar a numeração automática das chaves."
+                variant="destructive"
+                loading={loading}
+            />
         </div>
     )
 }

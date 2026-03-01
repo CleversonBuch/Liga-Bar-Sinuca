@@ -5,22 +5,18 @@ import { deleteTable, toggleTableStatus } from './actions'
 import { Button } from '@/components/ui/button'
 import { Trash2, Wrench, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { cn } from '@/lib/utils'
 
 export function TableListActions({ tableId, currentStatus, isSuperAdmin, className }: { tableId: string, currentStatus: string, isSuperAdmin: boolean, className?: string }) {
     const [loading, setLoading] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-    async function handleDelete() {
-        if (!isSuperAdmin) {
-            toast.error('Apenas o Administrador Mestre pode excluir mesas do sistema.')
-            return
-        }
-
-        if (!window.confirm('Tem certeza que deseja apagar esta mesa?')) return
-
+    async function handleDeleteConfirmed() {
         setLoading(true)
         const result = await deleteTable(tableId)
         setLoading(false)
+        setShowDeleteConfirm(false)
 
         if (result.success) {
             toast.success('Mesa removida.')
@@ -66,13 +62,29 @@ export function TableListActions({ tableId, currentStatus, isSuperAdmin, classNa
             <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleDelete}
+                onClick={() => {
+                    if (!isSuperAdmin) {
+                        toast.error('Apenas o Administrador Mestre pode excluir mesas do sistema.')
+                        return
+                    }
+                    setShowDeleteConfirm(true)
+                }}
                 disabled={loading}
                 className="text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
                 title="Excluir Mesa"
             >
                 <Trash2 className="h-4 w-4" />
             </Button>
+
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDeleteConfirmed}
+                title="Excluir Mesa?"
+                description="Esta ação irá remover permanentemente a mesa do sistema."
+                variant="destructive"
+                loading={loading}
+            />
         </div>
     )
 }

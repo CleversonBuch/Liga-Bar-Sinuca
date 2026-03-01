@@ -53,9 +53,9 @@ export default async function TorneioPage({ params }: { params: Promise<{ id: st
     }
 
     // Lógica do Pódio (Resultados Finais)
-    let champion = null
-    let runnerUp = null
-    let thirdPlace = null
+    let champion: any = null
+    let runnerUp: any = null
+    let thirdPlace: any = null
 
     if (isClosed && matches.length > 0) {
         const closedMatches = matches.filter((m: any) => m.winner_id != null)
@@ -71,26 +71,16 @@ export default async function TorneioPage({ params }: { params: Promise<{ id: st
                 if (thirdMatch) {
                     thirdPlace = thirdMatch.winner
                 } else {
-                    const semiMatches = closedMatches.filter((m: any) => m.phase === maxPhase - 1)
-                    if (semiMatches.length > 0) {
-                        const semiLosersStats = semiMatches.map((m: any) => {
-                            const isA = m.winner_id === m.player_b_id
-                            return {
-                                player: isA ? m.player_a : m.player_b,
-                                framesWon: isA ? m.score_a : m.score_b,
-                                framesLost: isA ? m.score_b : m.score_a,
-                                diff: (isA ? m.score_a : m.score_b) - (isA ? m.score_b : m.score_a)
-                            }
-                        }).filter(stat => stat.player != null)
+                    // O 3º lugar é quem perdeu para o Campeão na Semi-Final
+                    const championSemiMatch = closedMatches.find((m: any) =>
+                        m.phase === maxPhase - 1 &&
+                        (m.player_a_id === champion.id || m.player_b_id === champion.id)
+                    )
 
-                        if (semiLosersStats.length > 0) {
-                            // Sort by framesWon (desc), then by diff (desc)
-                            semiLosersStats.sort((a, b) => {
-                                if (b.framesWon !== a.framesWon) return b.framesWon - a.framesWon
-                                return b.diff - a.diff
-                            })
-                            thirdPlace = semiLosersStats[0].player
-                        }
+                    if (championSemiMatch) {
+                        thirdPlace = championSemiMatch.winner_id === championSemiMatch.player_a_id
+                            ? championSemiMatch.player_b
+                            : championSemiMatch.player_a
                     }
                 }
             }

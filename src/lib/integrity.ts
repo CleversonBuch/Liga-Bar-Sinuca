@@ -122,24 +122,16 @@ export async function recomputeRankings(supabase: SupabaseClient) {
                 if (thirdMatch) {
                     thirdPlaceId = thirdMatch.winner_id
                 } else {
-                    const semiMatches = closedTournamentMatches.filter(m => m.phase === maxPhase - 1)
-                    if (semiMatches.length > 0) {
-                        const semiLosersStats = semiMatches.map(m => {
-                            const isA = m.winner_id === m.player_b_id
-                            return {
-                                playerId: isA ? m.player_a_id : m.player_b_id,
-                                framesWon: isA ? m.score_a : m.score_b,
-                                diff: (isA ? m.score_a : m.score_b) - (isA ? m.score_b : m.score_a)
-                            }
-                        }).filter(stat => stat.playerId != null)
+                    // O 3º lugar é quem perdeu para o Campeão na Semi-Final
+                    const championSemiMatch = closedTournamentMatches.find((m: any) =>
+                        m.phase === maxPhase - 1 &&
+                        (m.player_a_id === winnerId || m.player_b_id === winnerId)
+                    )
 
-                        if (semiLosersStats.length > 0) {
-                            semiLosersStats.sort((a, b) => {
-                                if (b.framesWon !== a.framesWon) return b.framesWon - a.framesWon
-                                return b.diff - a.diff
-                            })
-                            thirdPlaceId = semiLosersStats[0].playerId
-                        }
+                    if (championSemiMatch) {
+                        thirdPlaceId = championSemiMatch.winner_id === championSemiMatch.player_a_id
+                            ? championSemiMatch.player_b_id
+                            : championSemiMatch.player_a_id
                     }
                 }
             }

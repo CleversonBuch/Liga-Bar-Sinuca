@@ -270,31 +270,19 @@ export async function closeTournament(tournamentId: string) {
     if (thirdMatch) {
         thirdPlaceId = thirdMatch.winner_id
     } else {
-        // Se não tem disputa de 3º, pegamos os perdedores da semi-final (fase final - 1)
-        // E desempatamos por quem venceu mais partidas na semi-final, depois pelo saldo de vitórias
-        const { data: semiMatches } = await supabase
+        // Se não tem disputa de 3º, o 3º lugar é quem perdeu para o Campeão na Semi-Final
+        const { data: championSemiMatch } = await supabase
             .from('matches')
-            .select('player_a_id, player_b_id, winner_id, score_a, score_b')
+            .select('player_a_id, player_b_id, winner_id')
             .eq('tournament_id', tournamentId)
             .eq('phase', (finalMatch?.phase || 1) - 1)
+            .or(`player_a_id.eq.${winnerId},player_b_id.eq.${winnerId}`)
+            .single()
 
-        if (semiMatches && semiMatches.length > 0) {
-            const semiLosersStats = semiMatches.map(m => {
-                const isA = m.winner_id === m.player_b_id
-                return {
-                    playerId: isA ? m.player_a_id : m.player_b_id,
-                    framesWon: isA ? m.score_a : m.score_b,
-                    diff: (isA ? m.score_a : m.score_b) - (isA ? m.score_b : m.score_a)
-                }
-            }).filter(stat => stat.playerId != null)
-
-            if (semiLosersStats.length > 0) {
-                semiLosersStats.sort((a, b) => {
-                    if (b.framesWon !== a.framesWon) return b.framesWon - a.framesWon
-                    return b.diff - a.diff
-                })
-                thirdPlaceId = semiLosersStats[0].playerId
-            }
+        if (championSemiMatch) {
+            thirdPlaceId = championSemiMatch.winner_id === championSemiMatch.player_a_id
+                ? championSemiMatch.player_b_id
+                : championSemiMatch.player_a_id
         }
     }
 

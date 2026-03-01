@@ -110,47 +110,78 @@ export default async function FinanceiroPage() {
                         <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
                             Extrato de Entradas <span className="text-sm font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 uppercase tracking-widest">Torneios</span>
                         </h2>
-                        <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-2xl relative">
-                            {/* Inner glow effect */}
-                            <div className="absolute inset-0 ring-1 ring-inset ring-white/5 pointer-events-none rounded-3xl z-20"></div>
+                        <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl relative">
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-left border-collapse relative z-10">
+                                    <thead>
+                                        <tr className="border-b border-white/10 bg-white/5">
+                                            <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none">Data</th>
+                                            <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none">Origem</th>
+                                            <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right leading-none">Fundo Mês</th>
+                                            <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right leading-none">Fundo Ano</th>
+                                            <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right leading-none">Lucro Bar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {tournaments?.map((t, index) => (
+                                            <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                                                <td className="p-5 text-sm font-medium text-slate-400">
+                                                    {new Date(t.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-5 font-bold text-white group-hover:text-primary transition-colors uppercase italic text-sm">
+                                                    Torneio {t.modality === '3_bolinhas' ? '3 Bolas' : 'Bola 8'}
+                                                </td>
+                                                <td className="p-5 text-right font-medium text-blue-400">R$ {(t.fund_monthly || 0).toFixed(2)}</td>
+                                                <td className="p-5 text-right font-medium text-indigo-400">R$ {(t.fund_yearly || 0).toFixed(2)}</td>
+                                                <td className="p-5 text-right font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">+ R$ {(t.fund_bar || 0).toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
 
-                            <table className="w-full text-left border-collapse relative z-10">
-                                <thead>
-                                    <tr className="border-b border-white/10 bg-white/5">
-                                        <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Data</th>
-                                        <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Origem</th>
-                                        <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Fundo Mês</th>
-                                        <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Fundo Ano</th>
-                                        <th className="p-5 text-[10px] font-black text-muted-foreground uppercase tracking-widest text-right">Lucro Bar</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {tournaments?.map((t, index) => (
-                                        <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                                            <td className="p-5 text-sm font-medium text-slate-400">
-                                                {new Date(t.created_at).toLocaleDateString()}
-                                            </td>
-                                            <td className="p-5 font-bold text-white group-hover:text-primary transition-colors">
-                                                Torneio {t.modality === '3_bolinhas' ? '3 Bolinhas' : 'Bola 8'}
-                                            </td>
-                                            <td className="p-5 text-right font-medium text-blue-400">R$ {(t.fund_monthly || 0).toFixed(2)}</td>
-                                            <td className="p-5 text-right font-medium text-indigo-400">R$ {(t.fund_yearly || 0).toFixed(2)}</td>
-                                            <td className="p-5 text-right font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">+ R$ {(t.fund_bar || 0).toFixed(2)}</td>
-                                        </tr>
-                                    ))}
-                                    {tournaments?.length === 0 && (
-                                        <tr>
-                                            <td colSpan={5} className="p-12 text-center">
-                                                <div className="inline-flex items-center justify-center p-4 rounded-full bg-white/5 mb-4 border border-white/10">
-                                                    <DollarSign className="w-8 h-8 text-muted-foreground/50" />
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-white/5">
+                                {tournaments?.map((t, index) => (
+                                    <div key={index} className="p-5 space-y-4 hover:bg-white/5 transition-colors">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                                                    {new Date(t.created_at).toLocaleDateString()}
                                                 </div>
-                                                <p className="font-bold text-white text-lg">Nenhuma movimentação</p>
-                                                <p className="text-muted-foreground text-sm mt-1">Nenhuma entrada financeira proveniente de torneios até o momento.</p>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                                <div className="font-black text-white uppercase italic text-sm tracking-tight">
+                                                    Torneio {t.modality === '3_bolinhas' ? '3 Bolas' : 'Bola 8'}
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs font-black text-emerald-400 italic leading-none">+ R$ {(t.fund_bar || 0).toFixed(2)}</div>
+                                                <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Lucro Bar</div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                                            <div>
+                                                <div className="text-sm font-black text-blue-400 italic">R$ {(t.fund_monthly || 0).toFixed(2)}</div>
+                                                <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Fundo Mês</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-black text-indigo-400 italic">R$ {(t.fund_yearly || 0).toFixed(2)}</div>
+                                                <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Fundo Ano</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {tournaments?.length === 0 && (
+                                <div className="p-12 text-center">
+                                    <div className="inline-flex items-center justify-center p-4 rounded-full bg-white/5 mb-4 border border-white/10">
+                                        <DollarSign className="w-8 h-8 text-muted-foreground/50" />
+                                    </div>
+                                    <p className="font-bold text-white text-lg">Nenhuma movimentação</p>
+                                    <p className="text-muted-foreground text-sm mt-1">Nenhuma entrada financeira proveniente de torneios até o momento.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { isSuperAdmin } from '@/lib/auth'
+import { recomputeSystemIntegrity } from '@/lib/integrity'
 
 export interface AppSettings {
     id: number
@@ -156,7 +157,7 @@ export async function resetSystemData() {
         const { error: matchesError } = await supabase
             .from('matches')
             .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000')
+            .not('id', 'is', null)
 
         if (matchesError) throw new Error(`Erro ao limpar partidas: ${matchesError.message}`)
 
@@ -164,7 +165,7 @@ export async function resetSystemData() {
         const { error: rankingsError } = await supabase
             .from('rankings')
             .delete()
-            .neq('id', 0)
+            .not('id', 'is', null)
 
         if (rankingsError) throw new Error(`Erro ao limpar rankings: ${rankingsError.message}`)
 
@@ -172,7 +173,7 @@ export async function resetSystemData() {
         const { error: tpError } = await supabase
             .from('tournament_players')
             .delete()
-            .neq('id', 0)
+            .not('id', 'is', null)
 
         if (tpError) throw new Error(`Erro ao limpar participações: ${tpError.message}`)
 
@@ -180,25 +181,19 @@ export async function resetSystemData() {
         const { error: tournamentsError } = await supabase
             .from('tournaments')
             .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000')
+            .not('id', 'is', null)
 
         if (tournamentsError) throw new Error(`Erro ao limpar torneios: ${tournamentsError.message}`)
 
-        // 5. Resetar estatísticas de jogadores (vitórias, partidas, títulos e ganhos)
-        const { error: playersError } = await supabase
-            .from('players')
-            .update({
-                wins: 0,
-                matches_played: 0,
-                titles: 0,
-                total_earnings: 0
-            })
-            .neq('id', '00000000-0000-0000-0000-000000000000')
-
-        if (playersError) throw new Error(`Erro ao resetar jogadores: ${playersError.message}`)
+        // 5. Recalcular integridade total (zera tudo baseado na ausência de dados)
+        await recomputeSystemIntegrity(supabase)
 
         revalidatePath('/', 'layout')
         revalidatePath('/ranking')
+        revalidatePath('/financeiro')
+        revalidatePath('/historico')
+        revalidatePath('/jogadores')
+        revalidatePath('/torneios')
         return { success: true }
     } catch (err: any) {
         console.error("Erro no Reset de Sistema:", err)

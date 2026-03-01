@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { recomputePlayerStats } from '@/lib/integrity'
 
 export async function getTournamentData(tournamentId: string) {
     const supabase = await createClient()
@@ -373,8 +374,7 @@ export async function resetMatch(matchId: string, tournamentId: string) {
     const { data: match } = await supabase.from('matches').select('*').eq('id', matchId).single()
     if (!match || !match.winner_id) return { success: false, error: 'Partida não finalizada ou não encontrada.' }
 
-    const oldWinnerId = match.winner_id
-    const oldLoserId = match.player_a_id === oldWinnerId ? match.player_b_id : match.player_a_id
+    const oldLoserId = match.player_a_id === match.winner_id ? match.player_b_id : match.player_a_id
 
     // 1. Reverter Status do Torneio (Vidas)
     if (oldLoserId) {
@@ -382,27 +382,9 @@ export async function resetMatch(matchId: string, tournamentId: string) {
         if (tLoser && tLoser.losses > 0) {
             await supabase.from('tournament_players').update({
                 losses: tLoser.losses - 1,
-                status: 'active' // Sempre volta pra active ao resetar uma derrota
+                status: 'active'
             }).eq('tournament_id', tournamentId).eq('player_id', oldLoserId)
         }
-
-        // Reverter stats globais (opcional, mas pro poder absoluto é bom)
-        const { data: globalLoser } = await supabase.from('players').select('losses, matches_played').eq('id', oldLoserId).single()
-        if (globalLoser && globalLoser.matches_played > 0) {
-            await supabase.from('players').update({
-                losses: Math.max(0, globalLoser.losses - 1),
-                matches_played: Math.max(0, globalLoser.matches_played - 1)
-            }).eq('id', oldLoserId)
-        }
-    }
-
-    // Reverter Winner stats globais
-    const { data: globalWinner } = await supabase.from('players').select('wins, matches_played').eq('id', oldWinnerId).single()
-    if (globalWinner && globalWinner.matches_played > 0) {
-        await supabase.from('players').update({
-            wins: Math.max(0, globalWinner.wins - 1),
-            matches_played: Math.max(0, globalWinner.matches_played - 1)
-        }).eq('id', oldWinnerId)
     }
 
     // 2. Limpar o Vencedor da Partida Atual
@@ -411,10 +393,12 @@ export async function resetMatch(matchId: string, tournamentId: string) {
         finished_at: null
     }).eq('id', matchId)
 
-    // Avaliação de Next Match não feita pra evitar baguncar uma chave adiantada.
-    // O ideal é resetar de cima pra baixo.
+    // 3. Recalcular stats globais dos jogadores (fonte única da verdade)
+    await recomputePlayerStats(supabase)
 
     revalidatePath(`/torneios/${tournamentId}`)
+    revalidatePath('/ranking')
+    revalidatePath('/jogadores')
     return { success: true }
 }
 
@@ -426,8 +410,13 @@ export async function deleteMatch(matchId: string, tournamentId: string) {
 
     const { error } = await supabase.from('matches').delete().eq('id', matchId)
 
-    if (error) return { success: false, error: 'Erro ao excluir torneio: ' + error.message }
+    if (error) return { success: false, error: 'Erro ao excluir partida: ' + error.message }
+
+    // Recalcular stats globais dos jogadores após exclusão
+    await recomputePlayerStats(supabase)
 
     revalidatePath(`/torneios/${tournamentId}`)
+    revalidatePath('/ranking')
+    revalidatePath('/jogadores')
     return { success: true }
 }

@@ -218,7 +218,7 @@ export default async function RankingPage(props: {
                         </div>
                     </div>
                     <span className="font-black text-lg italic tracking-tighter text-white">
-                        A.C.L.S <span className="text-[#00E676] drop-shadow-[0_0_8px_rgba(0,230,118,0.5)]">LIGA</span>
+                        {appSettings.app_name} <span className="text-[#00E676] drop-shadow-[0_0_8px_rgba(0,230,118,0.5)]">LIGA</span>
                     </span>
                 </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { Trophy } from 'lucide-react'
+import { Trophy, Check, X } from 'lucide-react'
 
 interface Match {
     id: string
@@ -116,8 +116,16 @@ export function BracketView({ matches }: { matches: Match[] }) {
                                                             <span className="text-[10px] text-slate-500 font-medium truncate italic opacity-80">{match.player_a.nickname}</span>
                                                         )}
                                                     </div>
-                                                    <div className={`font-black text-xl min-w-[32px] text-right tabular-nums ${match.winner_id === match.player_a_id ? 'text-emerald-400' : 'text-slate-700'}`}>
-                                                        {match.score_a || 0}
+                                                    <div className={`font-black flex items-center justify-end min-w-[32px] text-right ${match.winner_id === match.player_a_id ? 'text-emerald-400' : 'text-slate-700'}`}>
+                                                        {hasWinner ? (
+                                                            match.winner_id === match.player_a_id ? (
+                                                                <Check className="w-5 h-5 text-emerald-500" strokeWidth={3} />
+                                                            ) : (
+                                                                <X className="w-5 h-5 text-slate-700 opacity-50" strokeWidth={3} />
+                                                            )
+                                                        ) : (
+                                                            <span className="text-xl tabular-nums">{match.score_a || 0}</span>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -131,8 +139,16 @@ export function BracketView({ matches }: { matches: Match[] }) {
                                                             <span className="text-[10px] text-slate-500 font-medium truncate italic opacity-80">{match.player_b.nickname}</span>
                                                         )}
                                                     </div>
-                                                    <div className={`font-black text-xl min-w-[32px] text-right tabular-nums ${match.winner_id === match.player_b_id ? 'text-emerald-400' : 'text-slate-700'}`}>
-                                                        {match.score_b || 0}
+                                                    <div className={`font-black flex items-center justify-end min-w-[32px] text-right ${match.winner_id === match.player_b_id ? 'text-emerald-400' : 'text-slate-700'}`}>
+                                                        {hasWinner ? (
+                                                            match.winner_id === match.player_b_id ? (
+                                                                <Check className="w-5 h-5 text-emerald-500" strokeWidth={3} />
+                                                            ) : (
+                                                                <X className="w-5 h-5 text-slate-700 opacity-50" strokeWidth={3} />
+                                                            )
+                                                        ) : (
+                                                            <span className="text-xl tabular-nums">{match.score_b || 0}</span>
+                                                        )}
                                                     </div>
                                                 </div>
 

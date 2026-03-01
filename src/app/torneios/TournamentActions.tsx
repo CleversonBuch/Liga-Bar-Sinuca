@@ -46,7 +46,7 @@ export function TournamentActions({ tournamentId }: { tournamentId: string }) {
                 onClose={() => setShowConfirm(false)}
                 onConfirm={handleDeleteConfirmed}
                 title="Excluir Torneio?"
-                description="CUIDADO MÁXIMO: Esta ação irá apagar o torneio INTEIRO, incluindo todas as partidas, inscritos e chaves. Esta ação não pode ser desfeita."
+                description="Excluir este torneio apagará todas as partidas, pontos de ranking e movimentações financeiras associadas. As estatísticas e títulos dos jogadores serão recalculados automaticamente. Esta ação é irreversível."
                 variant="destructive"
                 loading={loading}
             />

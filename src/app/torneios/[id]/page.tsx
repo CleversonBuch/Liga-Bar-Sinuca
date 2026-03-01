@@ -52,6 +52,35 @@ export default async function TorneioPage({ params }: { params: Promise<{ id: st
         }
     }
 
+    // Lógica do Pódio (Resultados Finais)
+    let champion = null
+    let runnerUp = null
+    let thirdPlace = null
+
+    if (isClosed && matches.length > 0) {
+        const closedMatches = matches.filter((m: any) => m.winner_id != null)
+        if (closedMatches.length > 0) {
+            const maxPhase = Math.max(...closedMatches.map((m: any) => m.phase))
+            const finalMatch = closedMatches.find((m: any) => m.phase === maxPhase)
+
+            if (finalMatch) {
+                champion = finalMatch.winner
+                runnerUp = finalMatch.winner_id === finalMatch.player_a_id ? finalMatch.player_b : finalMatch.player_a
+
+                const thirdMatch = closedMatches.find((m: any) => m.phase === maxPhase && m.id !== finalMatch.id)
+                if (thirdMatch) {
+                    thirdPlace = thirdMatch.winner
+                } else {
+                    const semiMatches = closedMatches.filter((m: any) => m.phase === maxPhase - 1)
+                    if (semiMatches.length > 0) {
+                        const semiLosers = semiMatches.map((m: any) => m.winner_id === m.player_a_id ? m.player_b : m.player_a)
+                        if (semiLosers.length > 0) thirdPlace = semiLosers[0]
+                    }
+                }
+            }
+        }
+    }
+
     // Agrupa partidas por fase para exibição organizada
     const matchesByPhase = matches.reduce((acc: Record<number, any[]>, match: any) => {
         const p = match.phase || 1
@@ -128,6 +157,48 @@ export default async function TorneioPage({ params }: { params: Promise<{ id: st
                         </div>
                     </div>
                 </div>
+
+                {/* Pódio (Resultados Finais) */}
+                {isClosed && champion && (
+                    <div className="pt-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="flex items-center gap-3 mb-6 px-1">
+                            <div className="w-1.5 h-6 bg-amber-500 rounded-full"></div>
+                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter">Resultados Finais</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Ouro */}
+                            <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/30 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                                <div className="text-4xl mb-2 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">🥇</div>
+                                <div className="text-[10px] uppercase font-black text-amber-500 tracking-widest mb-1 shadow-sm">1º Lugar (Ouro)</div>
+                                <div className="text-xl font-black text-white uppercase italic tracking-tight">{champion.name}</div>
+                                {champion.nickname && <div className="text-xs text-amber-200/80 font-bold uppercase mt-1">"{champion.nickname}"</div>}
+                            </div>
+
+                            {/* Prata */}
+                            {runnerUp && (
+                                <div className="bg-gradient-to-br from-slate-300/20 to-slate-400/5 border border-slate-300/30 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-xl relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-slate-300/10 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div className="text-4xl mb-2 drop-shadow-[0_0_15px_rgba(203,213,225,0.4)]">🥈</div>
+                                    <div className="text-[10px] uppercase font-black text-slate-300 tracking-widest mb-1 shadow-sm">2º Lugar (Prata)</div>
+                                    <div className="text-xl font-black text-white uppercase italic tracking-tight">{runnerUp.name}</div>
+                                    {runnerUp.nickname && <div className="text-xs text-slate-300/80 font-bold uppercase mt-1">"{runnerUp.nickname}"</div>}
+                                </div>
+                            )}
+
+                            {/* Bronze */}
+                            {thirdPlace && (
+                                <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/5 border border-orange-500/30 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-xl relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div className="text-4xl mb-2 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">🥉</div>
+                                    <div className="text-[10px] uppercase font-black text-orange-400 tracking-widest mb-1 shadow-sm">3º Lugar (Bronze)</div>
+                                    <div className="text-xl font-black text-white uppercase italic tracking-tight">{thirdPlace.name}</div>
+                                    {thirdPlace.nickname && <div className="text-xs text-orange-200/80 font-bold uppercase mt-1">"{thirdPlace.nickname}"</div>}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Visualização em Árvore (Apenas para Chave Fixa) */}
                 {tournament.bracket_type === 'fixed' && tournament.format === 'single_elimination' && matches.length > 0 && (

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 // Senha definida no ambiente ou padrão 2580
 const ADMIN_PIN = process.env.ADMIN_PIN || '2580'
-const SUPER_ADMIN_PIN = process.env.SUPER_ADMIN_PIN || '9999'
+const SUPER_ADMIN_PIN = process.env.SUPER_ADMIN_PIN || '2581'
 
 export async function loginAdmin(pin: string) {
     if (pin === ADMIN_PIN || pin === SUPER_ADMIN_PIN) {

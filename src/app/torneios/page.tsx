@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Swords, Calendar, DollarSign, Trophy, ArrowRight, Medal } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { isSuperAdmin } from '@/lib/auth'
+import { isSuperAdmin, isAdmin } from '@/lib/auth'
 import { TournamentActions } from './TournamentActions'
 import { format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -10,6 +10,7 @@ import { ptBR } from 'date-fns/locale'
 export default async function TorneiosListPage() {
     const supabase = await createClient()
     const isSuper = await isSuperAdmin()
+    const isOperator = await isAdmin()
 
     // Buscar todos os torneios com os finalistas
     const { data: tournaments, error } = await supabase
@@ -47,14 +48,16 @@ export default async function TorneiosListPage() {
                             Central de Torneios
                         </h1>
                         <p className="text-muted-foreground text-xs md:text-base font-medium max-w-xl">
-                            Acompanhe disputas em tempo real e inicie novas etapas.
+                            Acompanhe disputas em tempo real e inicie novos torneios.
                         </p>
                     </div>
-                    <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_var(--color-primary)]/30 border-primary/50 transition-all rounded-full px-10 z-10 w-full sm:w-auto font-black uppercase tracking-widest text-xs h-12">
-                        <Link href="/torneios/novo">
-                            + Nova Etapa
-                        </Link>
-                    </Button>
+                    {isOperator && (
+                        <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_var(--color-primary)]/30 border-primary/50 transition-all rounded-full px-10 z-10 w-full sm:w-auto font-black uppercase tracking-widest text-xs h-12">
+                            <Link href="/torneios/novo">
+                                + Novo Torneio
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Lista de Torneios Agrupados */}
@@ -247,12 +250,14 @@ export default async function TorneiosListPage() {
                             <Trophy className="w-10 h-10 text-muted-foreground drop-shadow-md" />
                         </div>
                         <h2 className="text-2xl font-black text-white tracking-tight mb-2">A temporada ainda não começou.</h2>
-                        <p className="text-muted-foreground text-sm font-medium mb-8 max-w-sm mx-auto">Não há torneios registrados no sistema. Crie a primeira etapa para gerar chaves e rankings.</p>
-                        <Button size="lg" asChild className="bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all rounded-full px-8">
-                            <Link href="/torneios/novo">
-                                Criar Primeiro Torneio
-                            </Link>
-                        </Button>
+                        <p className="text-muted-foreground text-sm font-medium mb-8 max-w-sm mx-auto">Não há torneios registrados no sistema. Crie o primeiro torneio para gerar chaves e rankings.</p>
+                        {isOperator && (
+                            <Button size="lg" asChild className="bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all rounded-full px-8">
+                                <Link href="/torneios/novo">
+                                    Criar Primeiro Torneio
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 )}
             </main>

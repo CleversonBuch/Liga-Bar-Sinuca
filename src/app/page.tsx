@@ -123,7 +123,7 @@ export default async function DashboardPage() {
               <div className="text-3xl md:text-4xl font-black text-white tracking-tighter italic">
                 {fundMonthly.toFixed(0)} <span className="text-sm font-black text-blue-400 uppercase">BRL</span>
               </div>
-              <div className="text-muted-foreground text-[10px] font-black uppercase mt-1 tracking-widest">Premiação Acumulada</div>
+              <div className="text-muted-foreground text-[10px] font-black uppercase mt-1 tracking-widest">Prêmio Mensal</div>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Trophy } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { TournamentWizard } from './TournamentWizard'
+import { getAppSettings } from '@/app/settings/actions'
 
 export default async function NovoTorneioPage() {
     // Apenas operadores podem criar torneios
@@ -12,6 +13,8 @@ export default async function NovoTorneioPage() {
     // Buscar lista de jogadores disponíveis
     const supabase = await createClient()
     const { data: players } = await supabase.from('players').select('id, name, nickname').order('name')
+
+    const appSettings = await getAppSettings()
 
     return (
         <div className="w-full bg-slate-950 text-white animate-in fade-in duration-500">
@@ -23,7 +26,7 @@ export default async function NovoTorneioPage() {
                     </h1>
                     <p className="text-slate-400 mt-1">Configure o regulamento, taxas e lista de participantes para a nova competição.</p>
                 </div>
-                <TournamentWizard players={players || []} />
+                <TournamentWizard players={players || []} appSettings={appSettings} />
             </main>
         </div>
     )

@@ -69,7 +69,7 @@ export function FinancialSettingsForm({ initialSettings }: FinancialSettingsForm
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Fundo Mensal (3 Bolinhas) (%)</label>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Prêmio Mensal (%)</label>
                         <Input
                             type="number"
                             value={pcts.fund_monthly_pct}
@@ -78,7 +78,7 @@ export function FinancialSettingsForm({ initialSettings }: FinancialSettingsForm
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Fundo Anual (Bola 8) (%)</label>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Prêmio Anual (%)</label>
                         <Input
                             type="number"
                             value={pcts.fund_yearly_pct}
@@ -87,7 +87,7 @@ export function FinancialSettingsForm({ initialSettings }: FinancialSettingsForm
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lucro Limpo (Bar) (%)</label>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lucro Bar (%)</label>
                         <Input
                             type="number"
                             value={pcts.fund_bar_pct}

@@ -6,13 +6,14 @@ import { createTournament } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AppSettings } from '@/app/settings/actions'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { Trophy, Swords, DollarSign, Users, ChevronRight, ChevronLeft, Clock } from 'lucide-react'
 
 // Recebe jogadores do banco como prop
-export function TournamentWizard({ players }: { players: any[] }) {
+export function TournamentWizard({ players, appSettings }: { players: any[], appSettings: AppSettings }) {
     const router = useRouter()
     const [step, setStep] = useState(1)
     const [loading, setLoading] = useState(false)
@@ -210,20 +211,20 @@ export function TournamentWizard({ players }: { players: any[] }) {
 
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
-                                    <div className="text-2xl font-black text-emerald-400 italic leading-none">65%</div>
+                                    <div className="text-2xl font-black text-emerald-400 italic leading-none">{appSettings.prize_pool_winner_pct}%</div>
                                     <div className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-widest">Prêmio 1º</div>
                                 </div>
                                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
-                                    <div className="text-2xl font-black text-blue-400 italic leading-none">20%</div>
-                                    <div className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-widest">Fundo Mensal</div>
+                                    <div className="text-2xl font-black text-blue-400 italic leading-none">{appSettings.fund_monthly_pct}%</div>
+                                    <div className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-widest">Prêmio Mensal</div>
                                 </div>
                                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
-                                    <div className="text-2xl font-black text-amber-400 italic leading-none">10%</div>
-                                    <div className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-widest">Fundo Anual</div>
+                                    <div className="text-2xl font-black text-amber-400 italic leading-none">{appSettings.fund_yearly_pct}%</div>
+                                    <div className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-widest">Prêmio Anual</div>
                                 </div>
                                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
-                                    <div className="text-2xl font-black text-purple-400 italic leading-none">5%</div>
-                                    <div className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-widest">Fundo Bar</div>
+                                    <div className="text-2xl font-black text-purple-400 italic leading-none">{appSettings.fund_bar_pct}%</div>
+                                    <div className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-widest">Lucro Bar</div>
                                 </div>
                             </div>
                         </div>
@@ -284,7 +285,7 @@ export function TournamentWizard({ players }: { players: any[] }) {
                                     </div>
                                     <div className="relative z-10 text-right">
                                         <div className="text-[10px] text-emerald-500 font-black uppercase tracking-[0.2em] mb-1">Prêmio 1º</div>
-                                        <div className="text-3xl font-black text-emerald-400 italic leading-tight shadow-[0_0_20px_rgba(16,185,129,0.2)]">R$ {(totalArrecadado * 0.65).toFixed(2)}</div>
+                                        <div className="text-3xl font-black text-emerald-400 italic leading-tight shadow-[0_0_20px_rgba(16,185,129,0.2)]">R$ {(totalArrecadado * (appSettings.prize_pool_winner_pct / 100)).toFixed(2)}</div>
                                     </div>
                                     <Trophy className="absolute -right-4 -bottom-4 w-24 h-24 text-emerald-500 opacity-[0.03] rotate-12" />
                                 </div>

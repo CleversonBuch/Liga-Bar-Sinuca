@@ -3,9 +3,14 @@ import { getTables } from './actions'
 import { TableForm } from './TableForm'
 import { TableListActions } from './TableListActions'
 import { LayoutDashboard } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 export default async function MesasPage() {
     const isOperator = await isAdmin()
+    if (!isOperator) {
+        redirect('/')
+    }
+
     const isSuper = await isSuperAdmin()
     const { data: tables, error } = await getTables()
 

@@ -44,7 +44,7 @@ export function MobileHeader({
     ]
 
     const filteredNavItems = navItems.filter(item => {
-        const isAdminOnly = ['/financeiro', '/relatorios', '/configuracoes'].includes(item.href)
+        const isAdminOnly = ['/financeiro', '/relatorios', '/configuracoes', '/mesas'].includes(item.href)
         if (isAdminOnly) return isOperator
         return true
     })

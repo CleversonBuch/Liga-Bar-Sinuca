@@ -125,3 +125,61 @@ export async function getRankings(period: 'mes' | 'trimestre' | 'semestre' | 'an
         general: generalRanking || []
     }
 }
+
+export async function getEvolutionData() {
+    const supabase = await createClient()
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1
+
+    // 1. Pegar o ranking ATUAL para descobrir quem é o TOP 5 GERAL
+    const { general } = await getRankings('mes')
+    const top5Players = general.slice(0, 5).map(item => ({
+        id: item.player.id,
+        name: item.player.nickname || item.player.name
+    }))
+
+    if (top5Players.length === 0) return []
+
+    // 2. Buscar rankings dos últimos 4 meses para esses 5 jogadores
+    // Queremos mostrar a evolução: Mês-3, Mês-2, Mês-1, Atual
+    const months = []
+    for (let i = 3; i >= 0; i--) {
+        let m = currentMonth - i
+        let y = currentYear
+        if (m <= 0) {
+            m += 12
+            y -= 1
+        }
+        months.push({ month: m, year: y })
+    }
+
+    const { data: history } = await supabase
+        .from('rankings')
+        .select('player_id, points, month, year')
+        .in('player_id', top5Players.map(p => p.id))
+        .in('month', months.map(m => m.month))
+        .in('year', months.map(m => m.year))
+
+    // 3. Formatar para o Recharts
+    // Estrutura: [ { name: 'Seletiva #1', Player1: 10, Player2: 8 ... }, ... ]
+    const labels = ["Mês -3", "Mês -2", "Mês -1", "Atual"]
+
+    // Para simplificar o gráfico, vamos usar os nomes dos meses ou labels genéricas
+    const chartData = months.map((m, index) => {
+        const dataPoint: any = { name: labels[index] }
+
+        top5Players.forEach(p => {
+            // Soma pontos de todas as modalidades daquele mês/ano para o player
+            const pts = history
+                ?.filter(h => h.player_id === p.id && h.month === m.month && h.year === m.year)
+                .reduce((acc, curr) => acc + curr.points, 0) || 0
+
+            dataPoint[p.name] = pts
+        })
+
+        return dataPoint
+    })
+
+    return chartData
+}

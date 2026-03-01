@@ -7,7 +7,6 @@ import { logoutAdmin } from "@/app/actions"
 import { getAppSettings } from "@/app/settings/actions"
 import { Toaster } from "@/components/ui/sonner"
 import { MobileHeader } from "@/components/MobileHeader"
-import { MobileNav } from "@/components/MobileNav"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -66,8 +65,6 @@ export default async function RootLayout({
               {children}
             </div>
           </main>
-
-          <MobileNav />
         </div>
 
         <Toaster theme="dark" position="top-right" richColors closeButton className="font-sans" />

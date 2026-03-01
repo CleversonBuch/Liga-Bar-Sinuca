@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getAppSettings } from '@/app/settings/actions'
 
 export async function createTournament(formData: FormData) {
     const supabase = await createClient()
@@ -21,13 +22,20 @@ export async function createTournament(formData: FormData) {
         return { success: false, error: 'O mínimo para iniciar o torneio é 4 jogadores.' }
     }
 
-    // Cálculos financeiros automáticos
+    // Cálculos financeiros baseados nas configurações globais
+    const appSettings = await getAppSettings()
+
+    const pctWinner = (appSettings.prize_pool_winner_pct || 65) / 100
+    const pctMonthly = (appSettings.fund_monthly_pct || 20) / 100
+    const pctYearly = (appSettings.fund_yearly_pct || 10) / 100
+    const pctBar = (appSettings.fund_bar_pct || 5) / 100
+
     const totalArrecadado = entryFee * totalPlayers
     const prizePool = totalArrecadado
-    const prizeWinner = (prizePool * 0.65)
-    const fundMonthly = (prizePool * 0.20)
-    const fundYearly = (prizePool * 0.10)
-    const fundBar = (prizePool * 0.05)
+    const prizeWinner = (prizePool * pctWinner)
+    const fundMonthly = (prizePool * pctMonthly)
+    const fundYearly = (prizePool * pctYearly)
+    const fundBar = (prizePool * pctBar)
 
     // 1. Criar o torneio
     const { data: tournament, error: insertError } = await supabase

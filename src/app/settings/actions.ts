@@ -9,6 +9,10 @@ export interface AppSettings {
     app_name: string
     app_subtitle: string
     app_logo_url: string | null
+    prize_pool_winner_pct: number
+    fund_monthly_pct: number
+    fund_yearly_pct: number
+    fund_bar_pct: number
 }
 
 export async function getAppSettings(): Promise<AppSettings> {
@@ -27,6 +31,10 @@ export async function getAppSettings(): Promise<AppSettings> {
             app_name: 'A.C.L.S',
             app_subtitle: 'Torneios',
             app_logo_url: null,
+            prize_pool_winner_pct: 65,
+            fund_monthly_pct: 20,
+            fund_yearly_pct: 10,
+            fund_bar_pct: 5,
         }
     }
 
@@ -102,4 +110,35 @@ export async function uploadAppLogo(formData: FormData) {
 
     revalidatePath('/', 'layout')
     return { success: true, url: publicUrl }
+}
+
+export async function updateFinancialSettings(pcts: {
+    prize_pool_winner_pct: number
+    fund_monthly_pct: number
+    fund_yearly_pct: number
+    fund_bar_pct: number
+}) {
+    const isAuthorized = await isSuperAdmin()
+    if (!isAuthorized) {
+        return { success: false, error: 'Acesso negado.' }
+    }
+
+    const total = pcts.prize_pool_winner_pct + pcts.fund_monthly_pct + pcts.fund_yearly_pct + pcts.fund_bar_pct
+    if (total !== 100) {
+        return { success: false, error: 'A soma das porcentagens deve ser exatamente 100%.' }
+    }
+
+    const supabase = await createClient()
+    const { error } = await supabase
+        .from('app_settings')
+        .update({
+            ...pcts,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', 1)
+
+    if (error) return { success: false, error: error.message }
+
+    revalidatePath('/', 'layout')
+    return { success: true }
 }

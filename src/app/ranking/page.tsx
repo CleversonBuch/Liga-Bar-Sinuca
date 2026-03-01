@@ -1,9 +1,10 @@
 import { getRankings } from './actions'
 import { getAppSettings } from '@/app/settings/actions'
-import { Trophy, Medal, Crown, ArrowLeft } from 'lucide-react'
+import { Trophy, Medal, Crown, ArrowLeft, Info } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RulesModal } from '@/components/RulesModal'
 
 export default async function RankingPage(props: {
     searchParams: Promise<{ period?: string, tab?: string }>
@@ -300,24 +301,23 @@ export default async function RankingPage(props: {
                     </div>
 
                     {/* Seletor de Período Premium */}
-                    <div className="flex bg-slate-900/40 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md self-center md:self-auto w-full sm:w-auto overflow-x-auto no-scrollbar">
-                        {[
-                            { id: 'mes', label: 'Mês' },
-                            { id: 'trimestre', label: 'Trimestre' },
-                            { id: 'semestre', label: 'Semestre' },
-                            { id: 'ano', label: 'Ano' }
-                        ].map((p) => (
-                            <Link
-                                key={p.id}
-                                href={`/ranking?period=${p.id}&tab=${activeTab}`}
-                                className={`flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all duration-300 ${period === p.id
-                                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] scale-105'
-                                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                                    }`}
-                            >
-                                {p.label}
-                            </Link>
-                        ))}
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 backdrop-blur-xl">
+                            {(['mes', 'ano'] as const).map((p) => (
+                                <Link
+                                    key={p}
+                                    href={`/ranking?period=${p}&tab=${activeTab}`}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p
+                                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                                        : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                        }`}
+                                >
+                                    {p === 'mes' ? 'Mensal' : 'Anual'}
+                                </Link>
+                            ))}
+                        </div>
+
+                        <RulesModal />
                     </div>
                 </div>
 

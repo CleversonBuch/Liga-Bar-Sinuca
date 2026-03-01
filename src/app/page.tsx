@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { Trophy, Users, DollarSign, Swords, Medal, Target, LayoutDashboard, MonitorPlay, Sparkles, TrendingUp } from 'lucide-react'
+import { Trophy, Users, DollarSign, Swords, Medal, Target, LayoutDashboard, MonitorPlay, Sparkles, TrendingUp, ArrowRight, Calendar, Info } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { getAppSettings } from '@/app/settings/actions'
+import { Card, CardContent } from "@/components/ui/card"
+import { getRankings } from './ranking/actions'
+import { RulesModal } from '@/components/RulesModal'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -220,11 +223,17 @@ export default async function DashboardPage() {
               <div className="p-2 bg-amber-500/10 rounded-xl">
                 <Medal className="w-5 h-5 text-amber-400" />
               </div>
-              <h2 className="text-lg font-black text-white tracking-widest uppercase italic">Líderes da Temporada</h2>
+              <h2 className="text-lg font-black text-white tracking-widest uppercase italic">Ranking</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <RulesModal />
+              <Link href="/ranking" className="bg-white/5 border border-white/5 rounded-full px-4 h-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                Ver tudo <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Top 3 Bolinhas */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-6 shadow-2xl flex flex-col relative overflow-hidden group hover:border-emerald-500/20 transition-all">
               <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -245,7 +254,7 @@ export default async function DashboardPage() {
                       <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center font-black text-xs text-slate-500 ring-1 ring-white/10 italic">
                         {r.player.name.charAt(0)}
                       </div>
-                      <span className={`font-black text-sm truncate uppercase tracking-tight italic ${i === 0 ? 'text-white' : 'text-slate-400'}`}>{r.player.name}</span>
+                      <span className={`font-black text-sm truncate uppercase tracking-tight italic ${i === 0 ? 'text-white' : 'text-slate-400'}`}>{r.player.nickname || r.player.name}</span>
                     </div>
                     <div className="flex items-baseline gap-1 bg-white/5 px-2.5 py-1 rounded-xl border border-white/5">
                       <span className="text-xs font-black text-emerald-400 italic">{r.points}</span>
@@ -278,7 +287,7 @@ export default async function DashboardPage() {
                       <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center font-black text-xs text-slate-500 ring-1 ring-white/10 italic">
                         {r.player.name.charAt(0)}
                       </div>
-                      <span className={`font-black text-sm truncate uppercase tracking-tight italic ${i === 0 ? 'text-white' : 'text-slate-400'}`}>{r.player.name}</span>
+                      <span className={`font-black text-sm truncate uppercase tracking-tight italic ${i === 0 ? 'text-white' : 'text-slate-400'}`}>{r.player.nickname || r.player.name}</span>
                     </div>
                     <div className="flex items-baseline gap-1 bg-white/5 px-2.5 py-1 rounded-xl border border-white/5">
                       <span className="text-xs font-black text-blue-400 italic">{r.points}</span>

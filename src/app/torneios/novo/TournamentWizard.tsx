@@ -113,22 +113,25 @@ export function TournamentWizard({ players, appSettings }: { players: any[], app
                             <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Escolha o tipo de jogo para esta noite</p>
                         </div>
                         <RadioGroup value={modality} onValueChange={setModality} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className={`group relative border-2 rounded-3xl p-6 cursor-pointer transition-all duration-300 ${modality === '3_bolinhas' ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'border-white/5 bg-white/5 hover:border-white/10'}`} onClick={() => setModality('3_bolinhas')}>
+                            <Label
+                                htmlFor="3_bolinhas"
+                                className={`group relative border-2 rounded-3xl p-6 cursor-pointer transition-all duration-300 ${modality === '3_bolinhas' ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'border-white/5 bg-white/5 hover:border-white/10'}`}
+                            >
                                 <RadioGroupItem value="3_bolinhas" id="3_bolinhas" className="sr-only" />
-                                <Label htmlFor="3_bolinhas" className="cursor-pointer">
-                                    <div className={`text-xl font-black uppercase tracking-tighter mb-2 transition-colors ${modality === '3_bolinhas' ? 'text-emerald-400' : 'text-white'}`}>3 Bolinhas</div>
-                                    <p className="text-slate-400 text-sm font-medium leading-relaxed">A clássica sinuquinha de bar. Partidas rápidas e dinâmicas para quem gosta de ação.</p>
-                                </Label>
+                                <div className={`text-xl font-black uppercase tracking-tighter mb-2 transition-colors ${modality === '3_bolinhas' ? 'text-emerald-400' : 'text-white'}`}>3 Bolinhas</div>
+                                <p className="text-slate-400 text-sm font-medium leading-relaxed">A clássica sinuquinha de bar. Partidas rápidas e dinâmicas para quem gosta de ação.</p>
                                 {modality === '3_bolinhas' && <div className="absolute top-4 right-4 w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_var(--color-emerald-500)]"></div>}
-                            </div>
-                            <div className={`group relative border-2 rounded-3xl p-6 cursor-pointer transition-all duration-300 ${modality === 'bola_8' ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.1)]' : 'border-white/5 bg-white/5 hover:border-white/10'}`} onClick={() => setModality('bola_8')}>
+                            </Label>
+
+                            <Label
+                                htmlFor="bola_8"
+                                className={`group relative border-2 rounded-3xl p-6 cursor-pointer transition-all duration-300 ${modality === 'bola_8' ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.1)]' : 'border-white/5 bg-white/5 hover:border-white/10'}`}
+                            >
                                 <RadioGroupItem value="bola_8" id="bola_8" className="sr-only" />
-                                <Label htmlFor="bola_8" className="cursor-pointer">
-                                    <div className={`text-xl font-black uppercase tracking-tighter mb-2 transition-colors ${modality === 'bola_8' ? 'text-blue-400' : 'text-white'}`}>Bola 8</div>
-                                    <p className="text-slate-400 text-sm font-medium leading-relaxed">Modo oficial (ímpares e pares). Partidas mais táticas para quem joga com estratégia.</p>
-                                </Label>
+                                <div className={`text-xl font-black uppercase tracking-tighter mb-2 transition-colors ${modality === 'bola_8' ? 'text-blue-400' : 'text-white'}`}>Bola 8</div>
+                                <p className="text-slate-400 text-sm font-medium leading-relaxed">Modo oficial (ímpares e pares). Partidas mais táticas para quem joga com estratégia.</p>
                                 {modality === 'bola_8' && <div className="absolute top-4 right-4 w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_var(--color-blue-500)]"></div>}
-                            </div>
+                            </Label>
                         </RadioGroup>
                     </div>
                 )}
@@ -142,27 +145,32 @@ export function TournamentWizard({ players, appSettings }: { players: any[], app
                         </div>
                         <div className="space-y-8">
                             <RadioGroup value={format} onValueChange={setFormat} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className={`relative border-2 rounded-2xl p-5 cursor-pointer transition-all ${format === 'single_elimination' ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`} onClick={() => setFormat('single_elimination')}>
+                                <Label
+                                    htmlFor="se"
+                                    className={`relative border-2 rounded-2xl p-5 cursor-pointer transition-all ${format === 'single_elimination' ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`}
+                                >
                                     <RadioGroupItem value="single_elimination" id="se" className="sr-only" />
-                                    <Label htmlFor="se" className="cursor-pointer">
-                                        <div className="font-black text-white uppercase tracking-tighter mb-1">Mata-Mata</div>
-                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Eliminação direta. Perdeu, tchau.</p>
-                                    </Label>
-                                </div>
-                                <div className={`relative border-2 rounded-2xl p-5 cursor-pointer transition-all ${format === 'double_elimination' ? 'border-amber-500 bg-amber-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`} onClick={() => setFormat('double_elimination')}>
+                                    <div className="font-black text-white uppercase tracking-tighter mb-1">Mata-Mata</div>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Eliminação direta. Perdeu, tchau.</p>
+                                </Label>
+
+                                <Label
+                                    htmlFor="de"
+                                    className={`relative border-2 rounded-2xl p-5 cursor-pointer transition-all ${format === 'double_elimination' ? 'border-amber-500 bg-amber-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`}
+                                >
                                     <RadioGroupItem value="double_elimination" id="de" className="sr-only" />
-                                    <Label htmlFor="de" className="cursor-pointer">
-                                        <div className="font-black text-white uppercase tracking-tighter mb-1">Double Elim</div>
-                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Chance de volta pela repescagem.</p>
-                                    </Label>
-                                </div>
-                                <div className={`relative border-2 rounded-2xl p-5 cursor-pointer transition-all ${format === 'all_vs_all' ? 'border-purple-500 bg-purple-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`} onClick={() => setFormat('all_vs_all')}>
+                                    <div className="font-black text-white uppercase tracking-tighter mb-1">Double Elim</div>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Chance de volta pela repescagem.</p>
+                                </Label>
+
+                                <Label
+                                    htmlFor="ava"
+                                    className={`relative border-2 rounded-2xl p-5 cursor-pointer transition-all ${format === 'all_vs_all' ? 'border-purple-500 bg-purple-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`}
+                                >
                                     <RadioGroupItem value="all_vs_all" id="ava" className="sr-only" />
-                                    <Label htmlFor="ava" className="cursor-pointer">
-                                        <div className="font-black text-white uppercase tracking-tighter mb-1">Liga</div>
-                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Pontos corridos. Todos se enfrentam.</p>
-                                    </Label>
-                                </div>
+                                    <div className="font-black text-white uppercase tracking-tighter mb-1">Liga</div>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Pontos corridos. Todos se enfrentam.</p>
+                                </Label>
                             </RadioGroup>
 
                             {format !== 'all_vs_all' && (

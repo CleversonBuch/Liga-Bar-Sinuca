@@ -50,7 +50,7 @@ export function MobileHeader({
                             <Menu className="w-6 h-6" />
                         </Button>
                     </DialogTrigger>
-                    <DialogContent side="left" className="fixed inset-y-0 left-0 w-[280px] h-screen bg-slate-950/95 backdrop-blur-2xl border-r border-white/5 p-0 sm:max-w-none animate-in slide-in-from-left duration-300">
+                    <DialogContent className="fixed inset-y-0 left-0 translate-x-0 translate-y-0 w-[280px] h-screen bg-slate-950/95 backdrop-blur-2xl border-r border-white/5 p-0 max-w-none rounded-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left duration-300">
                         <DialogHeader className="p-6 border-b border-white/5">
                             <div className="flex items-center gap-3">
                                 {appSettings?.app_logo_url ? (

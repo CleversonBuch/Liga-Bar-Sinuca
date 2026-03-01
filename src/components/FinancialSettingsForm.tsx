@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { HandCoins, Save, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { HandCoins, Save, AlertCircle, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { updateFinancialSettings } from '@/app/settings/actions'
+import { updateFinancialSettings, resetSystemData } from '@/app/settings/actions'
 import { toast } from 'sonner'
+import { ConfirmModal } from './ConfirmModal'
 
 interface FinancialSettingsFormProps {
     initialSettings: {
@@ -18,7 +19,10 @@ interface FinancialSettingsFormProps {
 
 export function FinancialSettingsForm({ initialSettings }: FinancialSettingsFormProps) {
     const [loading, setLoading] = useState(false)
+    const [resetLoading, setResetLoading] = useState(false)
     const [pcts, setPcts] = useState(initialSettings)
+    const [showFirstConfirm, setShowFirstConfirm] = useState(false)
+    const [showSecondConfirm, setShowSecondConfirm] = useState(false)
 
     const total = pcts.prize_pool_winner_pct + pcts.fund_monthly_pct + pcts.fund_yearly_pct + pcts.fund_bar_pct
     const isInvalid = total !== 100
@@ -41,6 +45,20 @@ export function FinancialSettingsForm({ initialSettings }: FinancialSettingsForm
     const handleChange = (field: keyof typeof pcts, value: string) => {
         const numValue = parseFloat(value) || 0
         setPcts(prev => ({ ...prev, [field]: numValue }))
+    }
+
+    async function handleResetSystem() {
+        setResetLoading(true)
+        const res = await resetSystemData()
+        setResetLoading(false)
+        setShowSecondConfirm(false)
+
+        if (res.success) {
+            toast.success('Sistema resetado com sucesso! Tudo limpo.')
+            window.location.reload() // Recarrega para limpar todos os estados e caches
+        } else {
+            toast.error(res.error || 'Erro ao resetar sistema.')
+        }
     }
 
     return (
@@ -119,6 +137,60 @@ export function FinancialSettingsForm({ initialSettings }: FinancialSettingsForm
                     )}
                 </Button>
             </form>
+
+            {/* Zona de Perigo */}
+            <div className="mt-12 pt-8 border-t border-red-500/20 relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-red-500/10 rounded-xl text-red-500 ring-1 ring-red-500/20">
+                        <AlertTriangle className="w-5 h-5 font-black uppercase tracking-tighter" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-black text-red-500 uppercase tracking-widest italic">Zona de Perigo</h3>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight">Ações irreversíveis do sistema</p>
+                    </div>
+                </div>
+
+                <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 transition-all hover:bg-red-500/10">
+                    <div className="space-y-1 text-center md:text-left">
+                        <h4 className="text-xs font-black text-white uppercase tracking-widest italic">Zerar Todo o Sistema</h4>
+                        <p className="text-[10px] text-slate-500 font-medium">Remove todos os torneios e partidas, mantendo apenas os jogadores.</p>
+                    </div>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => setShowFirstConfirm(true)}
+                        disabled={resetLoading}
+                        className="w-full md:w-auto h-12 px-8 rounded-xl bg-red-950/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 font-black uppercase tracking-widest text-[10px] transition-all hover:scale-105"
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Zerar Sistema
+                    </Button>
+                </div>
+            </div>
+
+            {/* Modais de Confirmação Dupla */}
+            <ConfirmModal
+                isOpen={showFirstConfirm}
+                onClose={() => setShowFirstConfirm(false)}
+                onConfirm={() => {
+                    setShowFirstConfirm(false)
+                    setTimeout(() => setShowSecondConfirm(true), 100)
+                }}
+                title="Tem Certeza Absoluta?"
+                description="Você está prestes a apagar todos os torneios e partidas do sistema. Os jogadores serão mantidos, mas as estatísticas deles voltarão a zero."
+                variant="destructive"
+            />
+
+            <ConfirmModal
+                isOpen={showSecondConfirm}
+                onClose={() => setShowSecondConfirm(false)}
+                onConfirm={handleResetSystem}
+                title="ESTA AÇÃO É IRREVERSÍVEL!"
+                description="ÚLTIMO AVISO: Todas as chaves, históricos e premiações serão perdidos para sempre. Deseja prosseguir mesmo assim?"
+                confirmText="SIM, ZERAR TUDO AGORA"
+                variant="destructive"
+                loading={resetLoading}
+            />
         </div>
     )
 }

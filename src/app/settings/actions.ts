@@ -142,3 +142,48 @@ export async function updateFinancialSettings(pcts: {
     revalidatePath('/', 'layout')
     return { success: true }
 }
+
+export async function resetSystemData() {
+    const isAuthorized = await isSuperAdmin()
+    if (!isAuthorized) {
+        return { success: false, error: 'Acesso negado. Apenas o Administrador Mestre pode realizar esta ação.' }
+    }
+
+    const supabase = await createClient()
+
+    try {
+        // 1. Deletar todas as partidas
+        const { error: matchesError } = await supabase
+            .from('matches')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000') // Deleta tudo
+
+        if (matchesError) throw new Error(`Erro ao limpar partidas: ${matchesError.message}`)
+
+        // 2. Deletar todos os torneios
+        const { error: tournamentsError } = await supabase
+            .from('tournaments')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000') // Deleta tudo
+
+        if (tournamentsError) throw new Error(`Erro ao limpar torneios: ${tournamentsError.message}`)
+
+        // 3. Resetar estatísticas de jogadores (vitórias e partidas)
+        const { error: playersError } = await supabase
+            .from('players')
+            .update({
+                wins: 0,
+                matches_played: 0,
+                updated_at: new Date().toISOString()
+            })
+            .neq('id', '00000000-0000-0000-0000-000000000000') // Atualiza todos
+
+        if (playersError) throw new Error(`Erro ao resetar jogadores: ${playersError.message}`)
+
+        revalidatePath('/', 'layout')
+        return { success: true }
+    } catch (err: any) {
+        console.error("Erro no Reset de Sistema:", err)
+        return { success: false, error: err.message }
+    }
+}

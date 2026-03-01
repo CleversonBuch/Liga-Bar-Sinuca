@@ -84,7 +84,11 @@ export function Sidebar({ isOperator, performLogoutAction, appSettings, isSuperA
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2 scrollbar-hide">
-                {navItems.map((item) => {
+                {navItems.filter(item => {
+                    const isAdminOnly = ['/financeiro', '/relatorios', '/configuracoes'].includes(item.href)
+                    if (isAdminOnly) return isOperator
+                    return true
+                }).map((item) => {
                     const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
                     return (
                         <Link

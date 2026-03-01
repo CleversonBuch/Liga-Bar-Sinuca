@@ -1,8 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { DollarSign, ArrowUpRight, ArrowDownRight, Activity, Wallet, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { isAdmin } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export default async function FinanceiroPage() {
+    const isAuthorized = await isAdmin()
+    if (!isAuthorized) {
+        redirect('/')
+    }
+
     const supabase = await createClient()
 
     // Buscar torneios para agregar os fundos gerados

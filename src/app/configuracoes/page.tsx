@@ -2,9 +2,17 @@ import { Settings, ShieldAlert, Sliders } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getAppSettings } from '@/app/settings/actions'
 import { FinancialSettingsForm } from '@/components/FinancialSettingsForm'
+import { isSuperAdmin, isAdmin } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export default async function ConfiguracoesPage() {
+    const isAuthorized = await isAdmin()
+    if (!isAuthorized) {
+        redirect('/')
+    }
+
     const appSettings = await getAppSettings()
+    const isSuper = await isSuperAdmin()
 
     return (
         <div className="w-full bg-slate-950 text-white animate-in fade-in duration-500 min-h-screen">

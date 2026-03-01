@@ -173,8 +173,7 @@ export async function resetSystemData() {
             .from('players')
             .update({
                 wins: 0,
-                matches_played: 0,
-                updated_at: new Date().toISOString()
+                matches_played: 0
             })
             .neq('id', '00000000-0000-0000-0000-000000000000') // Atualiza todos
 

@@ -1,7 +1,13 @@
 import { FileText, DownloadCloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { isAdmin } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
-export default function RelatoriosPage() {
+export default async function RelatoriosPage() {
+    const isAuthorized = await isAdmin()
+    if (!isAuthorized) {
+        redirect('/')
+    }
     return (
         <div className="w-full bg-slate-950 text-white animate-in fade-in duration-500">
             <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-8 pb-20">

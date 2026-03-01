@@ -38,8 +38,16 @@ export function MobileHeader({
         { title: 'Ranking', href: '/ranking', icon: Trophy },
         { title: 'Jogadores', href: '/jogadores', icon: Users },
         { title: 'Histórico', href: '/historico', icon: History },
-        { title: 'Financeiro', href: '/financeiro', icon: History },
+        { title: 'Financeiro', href: '/financeiro', icon: Trophy },
+        { title: 'Relatórios', href: '/relatorios', icon: Trophy },
+        { title: 'Configurações', href: '/configuracoes', icon: Settings },
     ]
+
+    const filteredNavItems = navItems.filter(item => {
+        const isAdminOnly = ['/financeiro', '/relatorios', '/configuracoes'].includes(item.href)
+        if (isAdminOnly) return isOperator
+        return true
+    })
 
     return (
         <header className="md:hidden sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between">
@@ -73,8 +81,8 @@ export function MobileHeader({
                             </div>
                         </DialogHeader>
 
-                        <nav className="flex flex-col gap-1 p-4">
-                            {navItems.map((item) => {
+                        <nav className="flex-col gap-1 p-4 pb-20 overflow-y-auto h-full flex">
+                            {filteredNavItems.map((item) => {
                                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
 
                                 return (

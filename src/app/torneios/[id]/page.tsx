@@ -52,6 +52,16 @@ export default async function TorneioPage({ params }: { params: Promise<{ id: st
         }
     }
 
+    // Agrupa partidas por fase para exibição organizada
+    const matchesByPhase = matches.reduce((acc: Record<number, any[]>, match: any) => {
+        const p = match.phase || 1
+        if (!acc[p]) acc[p] = []
+        acc[p].push(match)
+        return acc
+    }, {})
+
+    const sortedPhases = Object.keys(matchesByPhase).map(Number).sort((a, b) => a - b)
+
     return (
         <div className="w-full text-white animate-in fade-in duration-500 pb-24">
             <main className="max-w-7xl mx-auto px-4 sm:px-6 md:p-8 space-y-6 md:space-y-10">
@@ -164,15 +174,33 @@ export default async function TorneioPage({ params }: { params: Promise<{ id: st
                             <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Nenhuma partida registrada</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {matches.map((match: any) => (
-                                <MatchCard
-                                    key={match.id}
-                                    match={match}
-                                    allTables={tables}
-                                    isOperator={isOperator}
-                                    isSuperAdmin={isSuper}
-                                />
+                        <div className="space-y-12">
+                            {sortedPhases.map((phaseNum) => (
+                                <div key={phaseNum} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                    {/* Separador de Fase */}
+                                    <div className="flex items-center gap-4 mb-6 sticky top-20 z-30 py-2 backdrop-blur-sm -mx-2 px-2">
+                                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-white/20"></div>
+                                        <div className="flex items-center gap-2 px-6 py-2 rounded-full border border-white/10 bg-slate-900/80 backdrop-blur-md shadow-xl ring-1 ring-white/5">
+                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary drop-shadow-[0_0_8px_rgba(var(--color-primary),0.5)]">
+                                                {matchesByPhase[phaseNum][0]?.phase_name || `Fase ${phaseNum}`}
+                                            </span>
+                                        </div>
+                                        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-white/10 to-white/20"></div>
+                                    </div>
+
+                                    {/* Grid de Partidas */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        {matchesByPhase[phaseNum].map((match: any) => (
+                                            <MatchCard
+                                                key={match.id}
+                                                match={match}
+                                                allTables={tables}
+                                                isOperator={isOperator}
+                                                isSuperAdmin={isSuper}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     )}

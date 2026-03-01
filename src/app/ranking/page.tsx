@@ -129,6 +129,26 @@ export default async function RankingPage(props: {
                                 {winRate}%
                             </div>
                         </div>
+
+                        {/* Títulos e Ganhos no Pódio */}
+                        <div className="flex flex-col gap-2 mt-5 pt-4 border-t border-white/10 w-full max-w-[200px] mx-auto">
+                            <div className="flex justify-between items-center bg-black/30 py-1.5 px-3 rounded-lg border border-white/5">
+                                <div className="flex items-center gap-2">
+                                    <Trophy className="w-3 h-3 text-amber-500" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Títulos</span>
+                                </div>
+                                <span className="text-xs font-black text-amber-500">{player.titles || 0}</span>
+                            </div>
+                            <div className="flex justify-between items-center bg-black/30 py-1.5 px-3 rounded-lg border border-white/5">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black text-emerald-500">$</span>
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ganhos</span>
+                                </div>
+                                <span className="text-xs font-black text-emerald-400">
+                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(player.total_earnings || 0)}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )
@@ -206,26 +226,46 @@ export default async function RankingPage(props: {
                                             ) : null}
 
                                             {/* Status Resumido Mobile */}
-                                            <div className="sm:hidden text-[10px] text-slate-400 font-medium mt-1">
-                                                <span className="text-[#00C853]">{wins}V</span> | <span className="text-[#FF5252]">{losses}D</span> | {winRate}%
+                                            <div className="sm:hidden flex flex-wrap gap-x-2 gap-y-1 mt-1.5">
+                                                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
+                                                    <span className="text-[#00C853]">{wins}V</span> | <span className="text-[#FF5252]">{losses}D</span> | {winRate}%
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Trophy className="w-2.5 h-2.5 text-amber-500" />
+                                                    <span className="text-[9px] font-black text-amber-500">{player.titles || 0}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[10px] font-black text-emerald-500 leading-none">$</span>
+                                                    <span className="text-[9px] font-black text-emerald-500">
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(player.total_earnings || 0)}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* Estatísticas (Desktop) */}
-                                        <div className="hidden sm:flex items-center gap-4 px-6 text-xs font-bold text-slate-400">
-                                            <div className="text-center">
-                                                <span className="block text-[#00C853] text-sm">{wins}</span>
-                                                <span className="text-[9px] uppercase tracking-wider">Vitórias</span>
+                                        {/* Estatísticas (Desktop Elite Zone) */}
+                                        <div className="hidden sm:flex items-center gap-3 px-4 text-xs font-bold text-slate-400">
+                                            <div className="text-center min-w-[40px]">
+                                                <span className="block text-[#00C853] text-sm">{wins}V</span>
                                             </div>
                                             <div className="w-px h-6 bg-slate-800" />
-                                            <div className="text-center">
-                                                <span className="block text-[#FF5252] text-sm">{losses}</span>
-                                                <span className="text-[9px] uppercase tracking-wider">Derrotas</span>
-                                            </div>
-                                            <div className="w-px h-6 bg-slate-800" />
-                                            <div className="text-center w-12">
+                                            <div className="text-center min-w-[40px]">
                                                 <span className="block text-white text-sm">{winRate}%</span>
-                                                <span className="text-[9px] uppercase tracking-wider">Aprov.</span>
+                                            </div>
+                                            <div className="w-px h-6 bg-slate-800" />
+                                            <div className="text-center px-2">
+                                                <div className="flex items-center gap-1.5 justify-center">
+                                                    <Trophy className="w-3 h-3 text-amber-500" />
+                                                    <span className="text-amber-500 text-sm">{player.titles || 0}</span>
+                                                </div>
+                                                <span className="text-[8px] uppercase tracking-tighter text-slate-600 block mt-0.5">Títulos</span>
+                                            </div>
+                                            <div className="w-px h-6 bg-slate-800" />
+                                            <div className="text-center px-2">
+                                                <span className="block text-emerald-400 text-sm">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(player.total_earnings || 0)}
+                                                </span>
+                                                <span className="text-[8px] uppercase tracking-tighter text-slate-600 block mt-0.5">Ganhos</span>
                                             </div>
                                         </div>
 

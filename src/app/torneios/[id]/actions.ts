@@ -330,16 +330,18 @@ export async function closeTournament(tournamentId: string) {
         }
 
         // Atualiza estatísticas do jogador
-        const { data: player } = await supabase.from('players').select('matches_played, titles, max_win_amount').eq('id', pId).single()
+        const { data: player } = await supabase.from('players').select('matches_played, titles, max_win_amount, total_earnings').eq('id', pId).single()
         if (player) {
             const isWinner = pId === winnerId
             const newTitles = isWinner ? (player.titles || 0) + 1 : player.titles
-            const prize = isWinner ? tournament.prize_winner : 0
+            const prize = isWinner ? (tournament.prize_winner || 0) : 0
             const newMax = Math.max(player.max_win_amount || 0, prize)
+            const newTotalEarnings = (player.total_earnings || 0) + prize
 
             await supabase.from('players').update({
                 titles: newTitles,
-                max_win_amount: newMax
+                max_win_amount: newMax,
+                total_earnings: newTotalEarnings
             }).eq('id', pId)
         }
     }

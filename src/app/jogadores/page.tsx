@@ -121,11 +121,31 @@ export default async function JogadoresPage() {
                                                     </div>
 
                                                     {/* Progress Indicator */}
-                                                    <div className="w-full h-1 bg-white/5 rounded-full mt-4 overflow-hidden">
+                                                    <div className="w-full h-1 bg-white/5 rounded-full mt-4 overflow-hidden text-center justify-center">
                                                         <div
                                                             className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full"
                                                             style={{ width: aproveitamento }}
                                                         />
+                                                    </div>
+
+                                                    {/* Premium Stats: Titles & Earnings */}
+                                                    <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-white/5">
+                                                        <div className="flex justify-between items-center px-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Títulos</span>
+                                                            </div>
+                                                            <span className="text-xs font-black text-amber-500 italic">{player.titles || 0}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center px-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/10 flex items-center justify-center text-[10px] font-black text-emerald-500">$</div>
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ganhos</span>
+                                                            </div>
+                                                            <span className="text-xs font-black text-emerald-400 italic">
+                                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(player.total_earnings || 0)}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

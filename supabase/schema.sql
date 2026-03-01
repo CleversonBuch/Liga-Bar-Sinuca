@@ -29,6 +29,7 @@ CREATE TABLE public.players (
   losses integer default 0,
   titles integer default 0,
   max_win_amount numeric(10,2) default 0.00,
+  total_earnings numeric(10,2) default 0.00,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

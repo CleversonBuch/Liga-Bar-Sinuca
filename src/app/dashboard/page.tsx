@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { getAppSettings } from '@/app/settings/actions'
 import { Card, CardContent } from "@/components/ui/card"
-import { getRankings } from './ranking/actions'
+import { getRankings } from '@/app/ranking/actions'
 import { RulesModal } from '@/components/RulesModal'
 
 export default async function DashboardPage() {

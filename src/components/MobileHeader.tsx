@@ -1,3 +1,5 @@
+'use client'
+
 import { Settings, LogOut, Menu, Trophy, Swords, LayoutDashboard, Users, History, X, ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 

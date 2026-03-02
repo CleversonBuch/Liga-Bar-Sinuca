@@ -227,15 +227,7 @@ export default async function RankingPage(props: {
 
             {/* MAIN CONTENT */}
             <main className="mt-16 px-4 py-8 space-y-8 animate-in fade-in duration-1000">
-                {/* 📊 CARD – EVOLUÇÃO TOP 5 */}
-                <section className="bg-gradient-to-br from-[#0F1C2E] to-[#12263A] border border-white/5 rounded-[2.5rem] p-6 shadow-2xl overflow-hidden">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-5 h-5 text-[#00E676]" />
-                        <h2 className="text-white font-semibold text-base">Evolução Top 5</h2>
-                    </div>
 
-                    <EvolutionChart data={evolutionData} />
-                </section>
 
                 {/* PERIOD SELECTOR */}
                 <div className="flex bg-[#0F1C2E] p-1.5 rounded-2xl border border-white/5 mx-auto w-max shadow-inner">
@@ -287,6 +279,16 @@ export default async function RankingPage(props: {
                         {renderRankingList(rank8)}
                     </TabsContent>
                 </Tabs>
+
+                {/* 📊 CARD – EVOLUÇÃO TOP 5 */}
+                <section className="bg-gradient-to-br from-[#0F1C2E] to-[#12263A] border border-white/5 rounded-[2.5rem] p-6 shadow-2xl overflow-hidden mt-8">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Zap className="w-5 h-5 text-[#00E676]" />
+                        <h2 className="text-white font-semibold text-base">Evolução Top 5</h2>
+                    </div>
+
+                    <EvolutionChart data={evolutionData} />
+                </section>
             </main>
         </div>
     )

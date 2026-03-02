@@ -22,7 +22,7 @@ type SidebarItem = {
 }
 
 const navItems: SidebarItem[] = [
-    { title: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { title: 'Mesas', href: '/mesas', icon: Swords },
     { title: 'Torneios', href: '/torneios', icon: Trophy },
     { title: 'Jogadores', href: '/jogadores', icon: Users },

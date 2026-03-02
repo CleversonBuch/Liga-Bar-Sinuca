@@ -34,7 +34,7 @@ export function MobileHeader({
     const pathname = usePathname()
     const router = useRouter()
 
-    const isSubPage = pathname !== '/dashboard' && pathname !== '/'
+    const isSubPage = !['/dashboard', '/', '/ranking', '/torneios', '/jogadores', '/historico', '/mesas', '/financeiro', '/relatorios', '/configuracoes'].includes(pathname)
 
 
     const navItems = [

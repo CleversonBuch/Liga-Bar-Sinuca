@@ -204,29 +204,9 @@ export default async function RankingPage(props: {
     }
 
     return (
-        <div className="min-h-screen bg-[#081220] flex flex-col pb-20">
-            {/* 🔝 HEADER FIXO SUPERIOR */}
-            <header className="fixed top-0 left-0 right-0 h-16 bg-[#0D1B2A] border-b border-white/5 z-50 px-4 flex items-center justify-between shadow-lg">
-                <Button variant="ghost" size="icon" className="text-white">
-                    <Menu className="w-6 h-6" />
-                </Button>
-
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden">
-                        <div className="w-full h-full bg-black relative flex items-center justify-center">
-                            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[10px] font-black italic">8</div>
-                        </div>
-                    </div>
-                    <span className="font-black text-lg italic tracking-tighter text-white">
-                        {appSettings.app_name} <span className="text-[#00E676] drop-shadow-[0_0_8px_rgba(0,230,118,0.5)]">LIGA</span>
-                    </span>
-                </div>
-
-                <div className="w-10" /> {/* Spacer */}
-            </header>
-
+        <div className="min-h-screen bg-[#081220] flex flex-col pb-20 overflow-x-hidden">
             {/* MAIN CONTENT */}
-            <main className="mt-16 px-4 py-8 space-y-8 animate-in fade-in duration-1000">
+            <main className="mt-4 px-4 py-8 space-y-8 animate-in fade-in duration-1000">
 
 
                 {/* PERIOD SELECTOR */}

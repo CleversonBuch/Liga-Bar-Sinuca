@@ -78,12 +78,12 @@ export function MobileHeader({
                             <DialogHeader className="p-6 border-b border-white/5">
                                 <div className="flex items-center gap-3">
                                     {appSettings?.app_logo_url ? (
-                                        <div className="relative w-8 h-8">
+                                        <div className="relative w-12 h-12">
                                             <Image src={appSettings.app_logo_url} alt="Logo" fill className="object-contain" unoptimized />
                                         </div>
                                     ) : (
-                                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                                            <span className="font-black text-white text-sm">{appSettings?.app_name.charAt(0) || 'A'}</span>
+                                        <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                                            <span className="font-black text-white text-lg">{appSettings?.app_name.charAt(0) || 'A'}</span>
                                         </div>
                                     )}
                                     <div className="flex flex-col text-left">

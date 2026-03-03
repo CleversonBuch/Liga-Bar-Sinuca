@@ -44,7 +44,7 @@ export function Sidebar({ isOperator, performLogoutAction, appSettings, isSuperA
     if (pathname === '/tv') return null
 
     return (
-        <aside className="w-[280px] bg-black/40 backdrop-blur-3xl border-r border-white/5 flex flex-col h-full hidden md:flex shadow-2xl relative z-20">
+        <aside className="w-[280px] bg-black/60 backdrop-blur-sm border-r border-white/5 flex flex-col h-full hidden md:flex shadow-2xl relative z-20">
             {/* Logo Area */}
             <div className="p-8 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
                 {appSettings && isSuperAdmin !== undefined ? (

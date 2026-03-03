@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { isSuperAdmin } from '@/lib/auth'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { recomputeSystemIntegrity } from '@/lib/integrity'
 
 export async function deleteTournament(tournamentId: string) {
@@ -26,7 +26,8 @@ export async function deleteTournament(tournamentId: string) {
         // 2. Recalcular TUDO: stats, rankings, títulos — garantindo integridade total
         await recomputeSystemIntegrity(supabase)
 
-        // 3. Revalidar todas as páginas afetadas
+        // 3. Revalidar caches e todas as páginas afetadas
+        revalidateTag('rankings', 'default')
         revalidatePath('/', 'layout')
         revalidatePath('/torneios')
         revalidatePath('/ranking')

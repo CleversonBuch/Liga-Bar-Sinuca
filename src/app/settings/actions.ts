@@ -1,7 +1,8 @@
 "use server"
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { unstable_cache } from 'next/cache'
 import { isSuperAdmin } from '@/lib/auth'
 import { recomputeSystemIntegrity } from '@/lib/integrity'
 
@@ -16,7 +17,7 @@ export interface AppSettings {
     fund_bar_pct: number
 }
 
-export async function getAppSettings(): Promise<AppSettings> {
+async function _fetchAppSettings(): Promise<AppSettings> {
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -26,7 +27,6 @@ export async function getAppSettings(): Promise<AppSettings> {
         .single()
 
     if (error || !data) {
-        // Fallback para não quebrar a UI antes do script de BD ser executado
         return {
             id: 1,
             app_name: 'A.C.L.S',
@@ -41,6 +41,12 @@ export async function getAppSettings(): Promise<AppSettings> {
 
     return data
 }
+
+export const getAppSettings = unstable_cache(
+    _fetchAppSettings,
+    ['app-settings'],
+    { revalidate: 60, tags: ['app-settings'] }
+)
 
 export async function updateAppSettings(name: string, subtitle: string) {
     const isAuthorized = await isSuperAdmin()
@@ -64,6 +70,7 @@ export async function updateAppSettings(name: string, subtitle: string) {
         return { success: false, error: error.message }
     }
 
+    revalidateTag('app-settings', 'default')
     revalidatePath('/', 'layout')
     return { success: true }
 }
@@ -109,6 +116,7 @@ export async function uploadAppLogo(formData: FormData) {
         return { success: false, error: 'Erro ao salvar a URL do logo.' }
     }
 
+    revalidateTag('app-settings', 'default')
     revalidatePath('/', 'layout')
     return { success: true, url: publicUrl }
 }
@@ -140,6 +148,7 @@ export async function updateFinancialSettings(pcts: {
 
     if (error) return { success: false, error: error.message }
 
+    revalidateTag('app-settings', 'default')
     revalidatePath('/', 'layout')
     return { success: true }
 }
@@ -188,6 +197,8 @@ export async function resetSystemData() {
         // 5. Recalcular integridade total (zera tudo baseado na ausência de dados)
         await recomputeSystemIntegrity(supabase)
 
+        revalidateTag('app-settings', 'default')
+        revalidateTag('rankings', 'default')
         revalidatePath('/', 'layout')
         revalidatePath('/ranking')
         revalidatePath('/financeiro')

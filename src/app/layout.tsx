@@ -45,9 +45,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex h-screen overflow-hidden bg-background text-foreground font-sans`}
       >
-        {/* Subtle Ambient Radial Glow */}
-        <div className="absolute top-0 inset-x-0 h-[600px] w-full bg-gradient-to-b from-primary/10 via-background/0 to-background/0 pointer-events-none -z-10 blur-3xl opacity-50"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10 opacity-30"></div>
+        {/* Subtle Ambient Radial Glow — lightweight gradient instead of blur */}
+        <div className="absolute top-0 inset-x-0 h-[600px] w-full bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none -z-10 opacity-60"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[radial-gradient(ellipse_at_center,var(--color-primary)_0%,transparent_70%)] pointer-events-none -z-10 opacity-[0.07]"></div>
 
         <Sidebar
           isOperator={isOperator}

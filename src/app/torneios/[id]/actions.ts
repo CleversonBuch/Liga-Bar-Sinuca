@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { recomputePlayerStats } from '@/lib/integrity'
 
 export async function getTournamentData(tournamentId: string) {
@@ -357,6 +357,7 @@ export async function closeTournament(tournamentId: string) {
         closed_at: new Date().toISOString()
     }).eq('id', tournamentId)
 
+    revalidateTag('rankings', 'default')
     revalidatePath(`/torneios/${tournamentId}`)
     return { success: true }
 }
@@ -398,6 +399,7 @@ export async function resetMatch(matchId: string, tournamentId: string) {
     // 3. Recalcular stats globais dos jogadores (fonte única da verdade)
     await recomputePlayerStats(supabase)
 
+    revalidateTag('rankings', 'default')
     revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/ranking')
     revalidatePath('/jogadores')
@@ -417,6 +419,7 @@ export async function deleteMatch(matchId: string, tournamentId: string) {
     // Recalcular stats globais dos jogadores após exclusão
     await recomputePlayerStats(supabase)
 
+    revalidateTag('rankings', 'default')
     revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/ranking')
     revalidatePath('/jogadores')

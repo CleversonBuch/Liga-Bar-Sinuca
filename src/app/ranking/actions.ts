@@ -1,5 +1,6 @@
 'use server'
 
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { unstable_cache } from 'next/cache'
 
@@ -45,7 +46,7 @@ function getMonthsForPeriod(period: string, currentMonth: number): number[] {
 }
 
 async function _fetchRankings(period: 'mes' | 'trimestre' | 'semestre' | 'ano' = 'mes') {
-    const supabase = await createClient()
+    const supabase = supabaseAdmin
     const now = new Date()
     const currentYear = now.getFullYear()
     const currentMonth = now.getMonth() + 1
@@ -137,7 +138,7 @@ export const getRankings = unstable_cache(
 )
 
 async function _fetchEvolutionData() {
-    const supabase = await createClient()
+    const supabase = supabaseAdmin
     const now = new Date()
     const currentYear = now.getFullYear()
     const currentMonth = now.getMonth() + 1

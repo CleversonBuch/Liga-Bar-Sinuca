@@ -1,10 +1,9 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin as supabase } from '@/lib/supabase/admin'
 import { unstable_cache } from 'next/cache'
 
 async function _fetchDashboardData() {
-    const supabase = await createClient()
     const now = new Date()
     const currentYear = now.getFullYear()
     const currentMonth = now.getMonth() + 1

@@ -1,5 +1,6 @@
 "use server"
 
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { unstable_cache } from 'next/cache'
@@ -18,7 +19,7 @@ export interface AppSettings {
 }
 
 async function _fetchAppSettings(): Promise<AppSettings> {
-    const supabase = await createClient()
+    const supabase = supabaseAdmin
 
     const { data, error } = await supabase
         .from('app_settings')

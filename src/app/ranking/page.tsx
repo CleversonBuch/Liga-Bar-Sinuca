@@ -3,6 +3,7 @@ import { Zap } from 'lucide-react'
 import Link from 'next/link'
 import { RulesModal } from '@/components/RulesModal'
 import { EvolutionChart } from '@/components/EvolutionChart'
+import { PodiumSection } from '@/components/PodiumSection'
 import { RankingTabs } from './RankingTabs'
 
 export default async function RankingPage(props: {
@@ -52,6 +53,9 @@ export default async function RankingPage(props: {
 
                     <EvolutionChart data={evolutionData} />
                 </section>
+
+                {/* 🏆 HALL DA FAMA — Mini Pódio 3D */}
+                <PodiumSection players={general} />
             </main>
         </div>
     )

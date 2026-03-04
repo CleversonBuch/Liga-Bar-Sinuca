@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Trophy, Medal, Crown } from 'lucide-react'
+import { Trophy, Medal, Crown, Award } from 'lucide-react'
 
 interface RankingTabsProps {
     rank3: any[]
@@ -32,8 +32,8 @@ export function RankingTabs({ rank3, rank8, general, initialTab }: RankingTabsPr
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex-1 text-slate-500 font-black text-[10px] py-4 rounded-xl transition-all uppercase tracking-widest ${activeTab === tab.id
-                                    ? 'bg-white/5 text-[#00E676] shadow-sm'
-                                    : 'hover:text-white hover:bg-white/[0.02]'
+                                ? 'bg-white/5 text-[#00E676] shadow-sm'
+                                : 'hover:text-white hover:bg-white/[0.02]'
                                 }`}
                         >
                             {tab.label}
@@ -50,6 +50,45 @@ export function RankingTabs({ rank3, rank8, general, initialTab }: RankingTabsPr
     )
 }
 
+// ————————————————————————————————————————————
+// Podium colors & config
+// ————————————————————————————————————————————
+const PODIUM = [
+    { // 1º — Ouro
+        bg: 'bg-gradient-to-b from-[#1A1400] to-[#F5B400]/10',
+        border: 'border-[#F5B400]/60',
+        avatarBorder: 'border-[#F5B400]',
+        accentText: 'text-[#F5B400]',
+        glow: 'shadow-[0_0_20px_rgba(245,180,0,0.15)]',
+        badgeBg: 'bg-[#F5B400]',
+        badgeText: 'text-black',
+        Icon: Crown,
+        label: 'Líder',
+    },
+    { // 2º — Prata / Azul
+        bg: 'bg-gradient-to-b from-[#0B1524] to-[#94A3B8]/10',
+        border: 'border-[#94A3B8]/40',
+        avatarBorder: 'border-[#94A3B8]',
+        accentText: 'text-[#94A3B8]',
+        glow: '',
+        badgeBg: 'bg-[#94A3B8]',
+        badgeText: 'text-black',
+        Icon: Medal,
+        label: 'Vice',
+    },
+    { // 3º — Bronze
+        bg: 'bg-gradient-to-b from-[#2A1A14] to-[#CD7F32]/10',
+        border: 'border-[#CD7F32]/40',
+        avatarBorder: 'border-[#CD7F32]',
+        accentText: 'text-[#CD7F32]',
+        glow: '',
+        badgeBg: 'bg-[#CD7F32]',
+        badgeText: 'text-white',
+        Icon: Award,
+        label: '3º',
+    },
+]
+
 function renderRankingList(rankingList: any[], isGeneral = false) {
     if (rankingList.length === 0) {
         return (
@@ -63,157 +102,143 @@ function renderRankingList(rankingList: any[], isGeneral = false) {
     const others = rankingList.slice(3)
 
     return (
-        <div className="space-y-10">
-            {/* 🏆 SEÇÃO PÓDIO */}
+        <div className="space-y-8">
+            {/* 🏆 PÓDIO — layout clássico: 2º | 1º | 3º */}
             <div className="flex flex-col items-center">
-                <h2 className="text-[#F5B400] font-black text-xl mb-6 flex items-center gap-2">
-                    👑 PÓDIO 👑
+                <h2 className="text-[#F5B400] font-black text-lg mb-5 flex items-center gap-2 uppercase italic tracking-tight">
+                    <span className="text-xl">👑</span> PÓDIO <span className="text-xl">👑</span>
                 </h2>
 
-                <div className="w-full space-y-4">
-                    {/* 🥇 CAMPEÃO */}
-                    {top3[0] && (
-                        <div className="relative group bg-gradient-to-b from-[#000000] to-[#F5B400]/20 border-2 border-[#F5B400] rounded-[2.5rem] p-8 shadow-[0_0_30px_rgba(245,180,0,0.15)] overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#F5B400]/10 rounded-full blur-3xl -mr-10 -mt-10" />
+                {/* Grid: 2º | 1º (elevated) | 3º */}
+                <div className="grid grid-cols-3 gap-2 w-full items-end">
+                    {/* Render in visual order: 2nd, 1st, 3rd */}
+                    {[1, 0, 2].map((rankIdx) => {
+                        const entry = top3[rankIdx]
+                        if (!entry) return <div key={rankIdx} />
+                        const cfg = PODIUM[rankIdx]
+                        const isChampion = rankIdx === 0
+                        const player = entry.player
+                        const wr = ((player.wins / (player.matches_played || 1)) * 100).toFixed(0)
+                        const firstName = player.name.split(' ')[0]
 
-                            <div className="relative z-10 flex flex-col items-center">
-                                <div className="mb-4">
-                                    <div className="w-10 h-10 bg-[#F5B400] rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(245,180,0,0.5)]">
-                                        <Crown className="w-6 h-6 text-black" />
-                                    </div>
+                        return (
+                            <div
+                                key={player.id}
+                                className={`
+                                    ${cfg.bg} ${cfg.border} ${cfg.glow}
+                                    border rounded-2xl flex flex-col items-center
+                                    transition-transform active:scale-[0.97]
+                                    ${isChampion ? 'p-3 pb-4 -mt-4 z-10' : 'p-2.5 pb-3'}
+                                `}
+                            >
+                                {/* Badge / Icon */}
+                                <div className={`w-6 h-6 rounded-full ${cfg.badgeBg} flex items-center justify-center mb-2 ${isChampion ? 'w-7 h-7 podium-shimmer' : ''}`}>
+                                    <cfg.Icon className={`${isChampion ? 'w-4 h-4' : 'w-3.5 h-3.5'} ${cfg.badgeText}`} />
                                 </div>
 
-                                <div className="relative mb-4">
-                                    <div className="w-28 h-28 rounded-full border-4 border-[#F5B400] overflow-hidden shadow-[0_0_20px_rgba(245,180,0,0.3)] bg-slate-900 flex items-center justify-center">
-                                        {top3[0].player.photo_url ? (
-                                            <img src={top3[0].player.photo_url} alt={top3[0].player.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span className="text-4xl font-black text-slate-700">{top3[0].player.name.charAt(0)}</span>
-                                        )}
-                                    </div>
-                                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#F5B400] text-black text-[10px] font-black px-3 py-1 rounded-full uppercase italic">
-                                        Líder
-                                    </div>
+                                {/* Avatar */}
+                                <div className={`
+                                    rounded-full overflow-hidden bg-slate-900 flex items-center justify-center mb-2
+                                    ${isChampion
+                                        ? `w-16 h-16 border-[3px] ${cfg.avatarBorder}`
+                                        : `w-12 h-12 border-2 ${cfg.avatarBorder}`
+                                    }
+                                `}>
+                                    {player.photo_url ? (
+                                        <img src={player.photo_url} alt={player.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className={`font-black text-slate-600 ${isChampion ? 'text-xl' : 'text-base'}`}>
+                                            {player.name.charAt(0)}
+                                        </span>
+                                    )}
                                 </div>
 
-                                <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter text-center">
-                                    {top3[0].player.name}
-                                </h3>
-                                {top3[0].player.nickname && (
-                                    <p className="text-[#F5B400] font-black text-xs uppercase tracking-widest mt-1">
-                                        &quot;{top3[0].player.nickname}&quot;
+                                {/* Position label */}
+                                <span className={`text-[8px] font-black uppercase tracking-widest ${cfg.accentText} mb-0.5`}>
+                                    {cfg.label}
+                                </span>
+
+                                {/* Name */}
+                                <h4 className={`font-black text-white uppercase italic text-center truncate w-full leading-tight ${isChampion ? 'text-xs' : 'text-[10px]'}`}>
+                                    {firstName}
+                                </h4>
+                                {player.nickname && (
+                                    <p className={`${cfg.accentText} font-bold uppercase tracking-widest truncate w-full text-center ${isChampion ? 'text-[8px]' : 'text-[7px]'}`}>
+                                        &quot;{player.nickname}&quot;
                                     </p>
                                 )}
 
-                                <div className="mt-6 flex flex-col items-center">
-                                    <span className="text-5xl font-black text-[#F5B400] italic drop-shadow-[0_0_10px_rgba(245,180,0,0.3)]">
-                                        {top3[0].points}
+                                {/* Points */}
+                                <div className="mt-2 flex flex-col items-center">
+                                    <span className={`font-black italic leading-none ${cfg.accentText} ${isChampion ? 'text-2xl' : 'text-lg'}`}>
+                                        {entry.points}
                                     </span>
-                                    <span className="text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mt-1">pontos</span>
+                                    <span className="text-slate-600 font-black text-[7px] uppercase tracking-widest mt-0.5">
+                                        pontos
+                                    </span>
                                 </div>
 
-                                <div className="w-full h-px bg-white/10 my-6" />
+                                {/* Separator */}
+                                <div className="w-full h-px bg-white/5 my-2" />
 
+                                {/* Stats row */}
                                 <div className="flex justify-around w-full">
                                     <div className="text-center">
-                                        <p className="text-[#00C853] font-black text-lg italic">{top3[0].player.wins || 0}</p>
-                                        <p className="text-slate-600 font-black text-[8px] uppercase tracking-widest">Vitórias</p>
+                                        <p className={`text-[#00C853] font-black italic ${isChampion ? 'text-sm' : 'text-xs'}`}>{player.wins || 0}</p>
+                                        <p className="text-slate-600 font-black text-[6px] uppercase tracking-widest">V</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-[#FF5252] font-black text-lg italic">{(top3[0].player.matches_played || 0) - (top3[0].player.wins || 0)}</p>
-                                        <p className="text-slate-600 font-black text-[8px] uppercase tracking-widest">Derrotas</p>
+                                        <p className={`text-[#FF5252] font-black italic ${isChampion ? 'text-sm' : 'text-xs'}`}>{(player.matches_played || 0) - (player.wins || 0)}</p>
+                                        <p className="text-slate-600 font-black text-[6px] uppercase tracking-widest">D</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-white font-black text-lg italic">{((top3[0].player.wins / (top3[0].player.matches_played || 1)) * 100).toFixed(0)}%</p>
-                                        <p className="text-slate-600 font-black text-[8px] uppercase tracking-widest">Aproveit.</p>
+                                        <p className={`text-white/80 font-black italic ${isChampion ? 'text-sm' : 'text-xs'}`}>{wr}%</p>
+                                        <p className="text-slate-600 font-black text-[6px] uppercase tracking-widest">%</p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-
-                    {/* 🥈 VICE & 🥉 TERCEIRO */}
-                    <div className="grid grid-cols-2 gap-4">
-                        {top3[1] && (
-                            <div className="bg-gradient-to-b from-[#0B1524] to-[#1E3A5F]/40 border border-[#4A90E2]/40 rounded-[2rem] p-6 flex flex-col items-center">
-                                <div className="w-8 h-8 rounded-full bg-[#4A90E2] flex items-center justify-center mb-3">
-                                    <Medal className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="w-16 h-16 rounded-full border-2 border-[#4A90E2] overflow-hidden mb-3 bg-slate-900 flex items-center justify-center">
-                                    {top3[1].player.photo_url ? (
-                                        <img src={top3[1].player.photo_url} alt={top3[1].player.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-xl font-black text-slate-700">{top3[1].player.name.charAt(0)}</span>
-                                    )}
-                                </div>
-                                <h4 className="text-sm font-black text-white text-center truncate w-full uppercase italic">
-                                    {top3[1].player.name.split(' ')[0]}
-                                </h4>
-                                <p className="text-xl font-black text-[#4A90E2] mt-2 italic">{top3[1].points}</p>
-                                <p className="text-[8px] text-slate-500 font-black uppercase mt-1 tracking-widest">PONTOS</p>
-                            </div>
-                        )}
-
-                        {top3[2] && (
-                            <div className="bg-gradient-to-b from-[#2A1A14] to-[#6B3E2E]/40 border border-[#CD7F32]/40 rounded-[2rem] p-6 flex flex-col items-center">
-                                <div className="w-8 h-8 rounded-full bg-[#CD7F32] flex items-center justify-center mb-3">
-                                    <Medal className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="w-16 h-16 rounded-full border-2 border-[#CD7F32] overflow-hidden mb-3 bg-slate-900 flex items-center justify-center">
-                                    {top3[2].player.photo_url ? (
-                                        <img src={top3[2].player.photo_url} alt={top3[2].player.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-xl font-black text-slate-700">{top3[2].player.name.charAt(0)}</span>
-                                    )}
-                                </div>
-                                <h4 className="text-sm font-black text-white text-center truncate w-full uppercase italic">
-                                    {top3[2].player.name.split(' ')[0]}
-                                </h4>
-                                <p className="text-xl font-black text-[#CD7F32] mt-2 italic">{top3[2].points}</p>
-                                <p className="text-[8px] text-slate-500 font-black uppercase mt-1 tracking-widest">PONTOS</p>
-                            </div>
-                        )}
-                    </div>
+                        )
+                    })}
                 </div>
             </div>
 
             {/* ⭐ ZONA DE ELITE */}
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[#00E676] text-xl">⭐</span>
-                    <h2 className="text-[#00E676] font-black text-xl uppercase italic tracking-tighter">
+                    <span className="text-[#00E676] text-lg">⭐</span>
+                    <h2 className="text-[#00E676] font-black text-lg uppercase italic tracking-tighter">
                         Zona de Elite
                     </h2>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {others.map((entry, index) => {
                         const player = entry.player
                         const pos = index + 4
                         const wr = ((player.wins / (player.matches_played || 1)) * 100).toFixed(0)
 
                         return (
-                            <div key={player.id} className="bg-[#0F1C2E] border border-white/5 rounded-2xl p-4 flex items-center gap-4 group active:scale-[0.98] transition-transform">
-                                <div className="w-8 h-8 flex items-center justify-center relative">
-                                    <span className="text-2xl font-black text-[#00C853]/20 italic absolute">{pos}</span>
-                                    <span className="text-sm font-black text-white z-10 italic">{pos}</span>
+                            <div key={player.id} className="bg-[#0F1C2E] border border-white/5 rounded-xl p-3 flex items-center gap-3 group active:scale-[0.98] transition-transform">
+                                <div className="w-7 h-7 flex items-center justify-center relative flex-shrink-0">
+                                    <span className="text-xl font-black text-[#00C853]/20 italic absolute">{pos}</span>
+                                    <span className="text-xs font-black text-white z-10 italic">{pos}</span>
                                 </div>
 
-                                <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-slate-900 flex items-center justify-center flex-shrink-0">
+                                <div className="w-9 h-9 rounded-full border border-white/10 overflow-hidden bg-slate-900 flex items-center justify-center flex-shrink-0">
                                     {player.photo_url ? (
                                         <img src={player.photo_url} alt={player.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-sm font-black text-slate-700 uppercase">{player.name.charAt(0)}</span>
+                                        <span className="text-xs font-black text-slate-700 uppercase">{player.name.charAt(0)}</span>
                                     )}
                                 </div>
 
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="text-white font-black text-sm uppercase truncate leading-none mb-1 italic">
+                                    <h4 className="text-white font-black text-xs uppercase truncate leading-none mb-1 italic">
                                         {player.name}
                                     </h4>
-                                    <div className="flex items-center gap-2">
-                                        {player.nickname && <span className="text-[#00C853] text-[9px] font-black uppercase tracking-widest truncate">&quot;{player.nickname}&quot;</span>}
-                                        <span className="text-slate-500 text-[9px] font-black uppercase flex items-center gap-1">
+                                    <div className="flex items-center gap-1.5">
+                                        {player.nickname && <span className="text-[#00C853] text-[8px] font-black uppercase tracking-widest truncate">&quot;{player.nickname}&quot;</span>}
+                                        <span className="text-slate-500 text-[8px] font-black uppercase flex items-center gap-1">
                                             <span className="text-[#00C853]">{player.wins}V</span>
                                             <span className="text-[#FF5252]">{(player.matches_played || 0) - (player.wins || 0)}D</span>
                                             <span className="text-white/60">{wr}%</span>
@@ -221,9 +246,9 @@ function renderRankingList(rankingList: any[], isGeneral = false) {
                                     </div>
                                 </div>
 
-                                <div className="text-right">
-                                    <div className="text-xl font-black text-[#00E676] italic leading-none">{entry.points}</div>
-                                    <div className="text-[8px] text-slate-600 font-bold uppercase tracking-widest mt-1">pts</div>
+                                <div className="text-right flex-shrink-0">
+                                    <div className="text-lg font-black text-[#00E676] italic leading-none">{entry.points}</div>
+                                    <div className="text-[7px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">pts</div>
                                 </div>
                             </div>
                         )

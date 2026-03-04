@@ -154,3 +154,32 @@
   scrollbar-width: none;
   /* Firefox */
 }
+
+/* Podium Animations */
+@keyframes podium-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scaleY(0.6);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.podium-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(245, 180, 0, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(245, 180, 0, 0.6), 0 0 40px rgba(245, 180, 0, 0.2);
+  }
+}

@@ -1,14 +1,17 @@
 import { getAppSettings } from '@/app/settings/actions'
 import { getDashboardData } from './actions'
+import { isAdmin } from '@/lib/auth'
 import { Trophy, Users, DollarSign, Swords, Medal, Crown, MonitorPlay, Sparkles, TrendingUp, ArrowRight, Wallet } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { EventBanner } from '@/components/EventBanner'
 
 export default async function DashboardPage() {
   const appSettings = await getAppSettings()
   const data = await getDashboardData()
+  const isOperator = await isAdmin()
 
-  const { activeTournament, nextMatch, playersCount, financials, rankings } = data
+  const { activeTournament, nextMatch, playersCount, financials, rankings, eventBannerText } = data
 
   return (
     <div className="p-4 md:p-10 space-y-6 md:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 max-w-7xl mx-auto">
@@ -19,12 +22,15 @@ export default async function DashboardPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-xs font-black uppercase tracking-widest mb-1 md:mb-2">
               <Sparkles className="w-3.5 h-3.5" /> Visão Executiva
             </div>
-            <Button size="sm" className="hidden md:flex bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_var(--color-primary)]/30 transition-all rounded-full px-8 z-10 font-black uppercase tracking-widest text-[10px]" asChild>
-              <Link href="/tv" target="_blank">
-                <MonitorPlay className="w-4 h-4 mr-2" />
-                Modo TV
-              </Link>
-            </Button>
+            {/* Desktop TV Button — Admin only */}
+            {isOperator && (
+              <Button size="sm" className="hidden md:flex bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_var(--color-primary)]/30 transition-all rounded-full px-8 z-10 font-black uppercase tracking-widest text-[10px]" asChild>
+                <Link href="/tv" target="_blank">
+                  <MonitorPlay className="w-4 h-4 mr-2" />
+                  Modo TV
+                </Link>
+              </Button>
+            )}
           </div>
           <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic">
             Painel de Controle
@@ -33,38 +39,38 @@ export default async function DashboardPage() {
             Situação atual da {appSettings.app_name}. Torneios, caixa e classificações consolidadas em tempo real.
           </p>
         </div>
-        {/* Mobile TV Button */}
-        <Button size="lg" className="md:hidden w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_var(--color-primary)]/30 transition-all rounded-full py-6 z-10 font-black uppercase tracking-widest text-xs" asChild>
-          <Link href="/tv" target="_blank">
-            <MonitorPlay className="w-5 h-5 mr-2" />
-            Acessar Modo TV
-          </Link>
-        </Button>
+        {/* Mobile TV Button — Admin only */}
+        {isOperator && (
+          <Button size="lg" className="md:hidden w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_var(--color-primary)]/30 transition-all rounded-full py-6 z-10 font-black uppercase tracking-widest text-xs" asChild>
+            <Link href="/tv" target="_blank">
+              <MonitorPlay className="w-5 h-5 mr-2" />
+              Acessar Modo TV
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* BENTO GRID SUPERIOR */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-4 md:gap-6">
 
-        {/* Card Destaque: Torneio Ao Vivo (Ocupa mais espaço) */}
-        <div className="md:col-span-4 lg:col-span-6 group relative bg-gradient-to-br from-[#0F1C2E] to-[#0A121F] border border-white/10 rounded-[2.5rem] p-6 shadow-2xl overflow-hidden hover:border-[#00E676]/30 transition-all duration-500">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#00E676]/10 rounded-full blur-[80px] pointer-events-none -mr-10 -mt-20"></div>
+        {/* Card Destaque: Torneio Ao Vivo OU Event Banner */}
+        <div className="md:col-span-4 lg:col-span-6">
+          {activeTournament ? (
+            <div className="group relative bg-gradient-to-br from-[#0F1C2E] to-[#0A121F] border border-white/10 rounded-[2.5rem] p-6 shadow-2xl overflow-hidden hover:border-[#00E676]/30 transition-all duration-500 h-full">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#00E676]/10 rounded-full blur-[80px] pointer-events-none -mr-10 -mt-20"></div>
 
-          <div className="relative z-10 flex flex-col h-full justify-between min-h-[160px]">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-gradient-to-b from-[#00E676] to-[#00C853] rounded-2xl text-black ring-2 ring-[#00E676]/20 shadow-[0_0_20px_rgba(0,230,118,0.3)]">
-                <Trophy className="w-6 h-6" />
-              </div>
-              {activeTournament && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#00E676]/10 border border-[#00E676]/30 rounded-full animate-pulse shadow-[0_0_15px_rgba(0,230,118,0.2)]">
-                  <div className="w-2 h-2 rounded-full bg-[#00E676]" />
-                  <span className="text-[10px] font-black text-[#00E676] uppercase tracking-[0.2em] leading-none mt-0.5">Ao Vivo</span>
+              <div className="relative z-10 flex flex-col h-full justify-between min-h-[160px]">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-3 bg-gradient-to-b from-[#00E676] to-[#00C853] rounded-2xl text-black ring-2 ring-[#00E676]/20 shadow-[0_0_20px_rgba(0,230,118,0.3)]">
+                    <Trophy className="w-6 h-6" />
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#00E676]/10 border border-[#00E676]/30 rounded-full animate-pulse shadow-[0_0_15px_rgba(0,230,118,0.2)]">
+                    <div className="w-2 h-2 rounded-full bg-[#00E676]" />
+                    <span className="text-[10px] font-black text-[#00E676] uppercase tracking-[0.2em] leading-none mt-0.5">Ao Vivo</span>
+                  </div>
                 </div>
-              )}
-            </div>
 
-            <div>
-              {activeTournament ? (
-                <>
+                <div>
                   <h3 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-none truncate">
                     {activeTournament.name}
                   </h3>
@@ -74,15 +80,16 @@ export default async function DashboardPage() {
                       {activeTournament.modality === '3_bolinhas' ? '3 Bolinhas' : 'Bola 8'}
                     </span>
                   </div>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-3xl md:text-4xl font-black text-white/40 tracking-tighter uppercase italic">Sem Evento</h3>
-                  <p className="text-muted-foreground text-xs font-black uppercase mt-2 tracking-widest">Aguardando novo torneio</p>
-                </>
-              )}
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <EventBanner
+              initialText={eventBannerText}
+              isAdmin={isOperator}
+              hasActiveTournament={false}
+            />
+          )}
         </div>
 
         {/* Bloco Central (Vertical em mobile, 2 colunas no grid) */}
@@ -122,7 +129,7 @@ export default async function DashboardPage() {
 
         {/* Bloco Direito */}
         <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-4 md:gap-6">
-          {/* PRÓXIMo JOGO */}
+          {/* PRÓXIMO JOGO */}
           <div className="group flex-[1.5] relative bg-[#0F1C2E] border border-white/5 rounded-[2rem] p-5 shadow-2xl overflow-hidden">
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="flex justify-between items-start mb-2">
@@ -185,15 +192,15 @@ export default async function DashboardPage() {
 
             <div className="space-y-1 relative z-10">
               {[
-                { label: 'Torneios Realizados', value: financials.tourneysThisMonthCount, color: 'text-white' },
-                { label: 'Arrecadação Bruta', value: `R$ ${financials.totalArrecadadoMes.toLocaleString('pt-BR')}`, color: 'text-[#4A90E2]' },
-                { label: 'Média de Pilotos', value: financials.avgPlayersPerTournament.toFixed(1).replace('.0', ''), color: 'text-white' },
-                { label: 'Maior Prêmio (Mês)', value: `R$ ${financials.maxWinnerPrize.toLocaleString('pt-BR')}`, color: 'text-[#F5B400]' }
+                { label: 'Torneios Realizados', value: financials.tourneysThisMonthCount, color: 'text-white', pulse: false },
+                { label: 'Arrecadação Bruta', value: `R$ ${financials.totalArrecadadoMes.toLocaleString('pt-BR')}`, color: 'text-[#4A90E2]', pulse: false },
+                { label: 'Média de Jogadores', value: financials.avgPlayersPerTournament.toFixed(1).replace('.0', ''), color: 'text-white', pulse: false },
+                { label: 'Maior Prêmio (Mês)', value: `R$ ${financials.maxWinnerPrize.toLocaleString('pt-BR')}`, color: 'text-[#00E676]', pulse: true }
               ].map((stat, idx) => (
                 <div key={idx}>
                   <div className="flex justify-between items-center py-4 px-2 hover:bg-white/5 rounded-2xl transition-all -mx-2">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</span>
-                    <span className={`font-black text-xl italic ${stat.color}`}>{stat.value}</span>
+                    <span className={`font-black text-xl italic ${stat.color} ${stat.pulse ? 'green-pulse' : ''}`}>{stat.value}</span>
                   </div>
                   {idx !== 3 && <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>}
                 </div>
@@ -202,7 +209,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Bloco Direito: Ranking Top 3 */}
+        {/* Bloco Direito: Elite do Mês — Bola 8, 3 Bolinhas, Geral */}
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-3">
@@ -216,48 +223,67 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100%-48px)]">
-            {/* 3 Bolinhas Preview */}
-            <div className="bg-[#0F1C2E] border border-white/5 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden flex flex-col">
-              <h3 className="text-xs font-black text-center text-[#00E676] uppercase tracking-[0.2em] mb-6">3 Bolinhas</h3>
-              <div className="flex-1 space-y-3">
-                {rankings.rank3.map((entry: any, i: number) => (
-                  <div key={entry.player.id} className={`flex items-center gap-4 p-3 rounded-2xl border ${i === 0 ? 'bg-gradient-to-r from-[#F5B400]/10 to-transparent border-[#F5B400]/30' : 'bg-black/20 border-white/5'}`}>
-                    <div className="flex-shrink-0">
-                      {i === 0 ? <Crown className="w-6 h-6 text-[#F5B400]" /> : <Medal className={`w-5 h-5 ${i === 1 ? 'text-slate-300' : 'text-[#CD7F32]'}`} />}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Bola 8 Preview (FIRST) */}
+            <div className="bg-[#0F1C2E] border border-white/5 rounded-[2.5rem] p-5 shadow-2xl relative overflow-hidden flex flex-col">
+              <h3 className="text-xs font-black text-center text-[#4A90E2] uppercase tracking-[0.2em] mb-4">Bola 8</h3>
+              <div className="flex-1 space-y-2">
+                {rankings.rank8.map((entry: any, i: number) => (
+                  <div key={entry.player.id} className={`flex items-center gap-3 p-2.5 rounded-xl border ${i === 0 ? 'bg-gradient-to-r from-[#F5B400]/10 to-transparent border-[#F5B400]/30' : 'bg-black/20 border-white/5'}`}>
+                    <div className="flex-shrink-0 w-5">
+                      {i === 0 ? <Crown className="w-5 h-5 text-[#F5B400]" /> : i === 1 ? <Medal className="w-4 h-4 text-slate-300" /> : i === 2 ? <Medal className="w-4 h-4 text-[#CD7F32]" /> : <span className="text-[10px] font-black text-slate-500 italic pl-0.5">{i + 1}</span>}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className={`text-sm font-black uppercase italic truncate ${i === 0 ? 'text-[#F5B400]' : 'text-white'}`}>{entry.player.nickname || entry.player.name}</h4>
+                      <h4 className={`text-xs font-black uppercase italic truncate ${i === 0 ? 'text-[#F5B400]' : 'text-white'}`}>{entry.player.nickname || entry.player.name}</h4>
                     </div>
                     <div className="flex-shrink-0 text-right">
-                      <div className="text-lg font-black italic text-[#00E676]">{entry.points}</div>
-                      <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Pts</div>
+                      <div className="text-base font-black italic text-[#4A90E2]">{entry.points}</div>
                     </div>
                   </div>
                 ))}
-                {rankings.rank3.length === 0 && <p className="text-center text-slate-500 text-xs font-black uppercase mt-10">Sem ranqueados</p>}
+                {rankings.rank8.length === 0 && <p className="text-center text-slate-500 text-xs font-black uppercase mt-6">Sem ranqueados</p>}
               </div>
             </div>
 
-            {/* Bola 8 Preview */}
-            <div className="bg-[#0F1C2E] border border-white/5 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden flex flex-col">
-              <h3 className="text-xs font-black text-center text-[#4A90E2] uppercase tracking-[0.2em] mb-6">Bola 8</h3>
-              <div className="flex-1 space-y-3">
-                {rankings.rank8.map((entry: any, i: number) => (
-                  <div key={entry.player.id} className={`flex items-center gap-4 p-3 rounded-2xl border ${i === 0 ? 'bg-gradient-to-r from-[#F5B400]/10 to-transparent border-[#F5B400]/30' : 'bg-black/20 border-white/5'}`}>
-                    <div className="flex-shrink-0">
-                      {i === 0 ? <Crown className="w-6 h-6 text-[#F5B400]" /> : <Medal className={`w-5 h-5 ${i === 1 ? 'text-slate-300' : 'text-[#CD7F32]'}`} />}
+            {/* 3 Bolinhas Preview (SECOND) */}
+            <div className="bg-[#0F1C2E] border border-white/5 rounded-[2.5rem] p-5 shadow-2xl relative overflow-hidden flex flex-col">
+              <h3 className="text-xs font-black text-center text-[#00E676] uppercase tracking-[0.2em] mb-4">3 Bolinhas</h3>
+              <div className="flex-1 space-y-2">
+                {rankings.rank3.map((entry: any, i: number) => (
+                  <div key={entry.player.id} className={`flex items-center gap-3 p-2.5 rounded-xl border ${i === 0 ? 'bg-gradient-to-r from-[#F5B400]/10 to-transparent border-[#F5B400]/30' : 'bg-black/20 border-white/5'}`}>
+                    <div className="flex-shrink-0 w-5">
+                      {i === 0 ? <Crown className="w-5 h-5 text-[#F5B400]" /> : i === 1 ? <Medal className="w-4 h-4 text-slate-300" /> : i === 2 ? <Medal className="w-4 h-4 text-[#CD7F32]" /> : <span className="text-[10px] font-black text-slate-500 italic pl-0.5">{i + 1}</span>}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className={`text-sm font-black uppercase italic truncate ${i === 0 ? 'text-[#F5B400]' : 'text-white'}`}>{entry.player.nickname || entry.player.name}</h4>
+                      <h4 className={`text-xs font-black uppercase italic truncate ${i === 0 ? 'text-[#F5B400]' : 'text-white'}`}>{entry.player.nickname || entry.player.name}</h4>
                     </div>
                     <div className="flex-shrink-0 text-right">
-                      <div className="text-lg font-black italic text-[#4A90E2]">{entry.points}</div>
-                      <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Pts</div>
+                      <div className="text-base font-black italic text-[#00E676]">{entry.points}</div>
                     </div>
                   </div>
                 ))}
-                {rankings.rank8.length === 0 && <p className="text-center text-slate-500 text-xs font-black uppercase mt-10">Sem ranqueados</p>}
+                {rankings.rank3.length === 0 && <p className="text-center text-slate-500 text-xs font-black uppercase mt-6">Sem ranqueados</p>}
+              </div>
+            </div>
+
+            {/* Geral Preview (THIRD) */}
+            <div className="bg-[#0F1C2E] border border-white/5 rounded-[2.5rem] p-5 shadow-2xl relative overflow-hidden flex flex-col">
+              <h3 className="text-xs font-black text-center text-[#F5B400] uppercase tracking-[0.2em] mb-4">Geral</h3>
+              <div className="flex-1 space-y-2">
+                {rankings.general.map((entry: any, i: number) => (
+                  <div key={entry.player.id} className={`flex items-center gap-3 p-2.5 rounded-xl border ${i === 0 ? 'bg-gradient-to-r from-[#F5B400]/10 to-transparent border-[#F5B400]/30' : 'bg-black/20 border-white/5'}`}>
+                    <div className="flex-shrink-0 w-5">
+                      {i === 0 ? <Crown className="w-5 h-5 text-[#F5B400]" /> : i === 1 ? <Medal className="w-4 h-4 text-slate-300" /> : i === 2 ? <Medal className="w-4 h-4 text-[#CD7F32]" /> : <span className="text-[10px] font-black text-slate-500 italic pl-0.5">{i + 1}</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`text-xs font-black uppercase italic truncate ${i === 0 ? 'text-[#F5B400]' : 'text-white'}`}>{entry.player.nickname || entry.player.name}</h4>
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <div className="text-base font-black italic text-[#F5B400]">{entry.points}</div>
+                    </div>
+                  </div>
+                ))}
+                {rankings.general.length === 0 && <p className="text-center text-slate-500 text-xs font-black uppercase mt-6">Sem ranqueados</p>}
               </div>
             </div>
           </div>

@@ -87,83 +87,114 @@ export async function createTournament(formData: FormData) {
     if (format === 'single_elimination') {
 
         if (bracketType === 'fixed') {
-            // == ÁRVORE FIXA PLENA (Potência de 2) ==
-            const n = Math.pow(2, Math.ceil(Math.log2(totalPlayers)))
-            const rounds = Math.log2(n)
-
+            // == ÁRVORE FIXA (SEQUENCIAL/PAREADO) ==
+            // Solução matemática para chaves que não formam potência de 2
+            // Parea todos os possíveis. Se ímpar, 1 jogador folga (W.O).
             const allMatches = []
-            const matchesByRound: any[][] = []
 
-            // A. Criar as "caixas" de partidas para todas as rodadas
-            for (let r = 0; r < rounds; r++) {
-                const matchCount = n / Math.pow(2, r + 1)
-                const roundMatches = []
-                for (let i = 0; i < matchCount; i++) {
-                    const isFinal = r === rounds - 1
-                    const isSemi = r === rounds - 2
-                    roundMatches.push({
-                        id: crypto.randomUUID(),
-                        tournament_id: tournamentId,
-                        phase: r + 1,
-                        phase_name: isFinal ? 'Final' : isSemi ? 'Semifinal' : `Fase ${r + 1}`,
-                        is_repescagem: false,
-                        player_a_id: null,
-                        player_b_id: null,
-                        winner_id: null,
-                        is_bye: false,
-                        next_match_id: null,
-                        loser_match_id: null,
-                        score_a: 0,
-                        score_b: 0
-                    })
-                }
-                matchesByRound.push(roundMatches)
-            }
+            // Nós iniciais: cada jogador
+            let nodes = shuffledPlayers.map(id => ({ type: 'player', id, byes: 0 }))
+            let phase = 1
 
-            // B. Ligar as partidas via next_match_id
-            for (let r = 0; r < rounds - 1; r++) {
-                for (let i = 0; i < matchesByRound[r].length; i++) {
-                    const nextMatchIndex = Math.floor(i / 2)
-                    matchesByRound[r][i].next_match_id = matchesByRound[r + 1][nextMatchIndex].id
-                }
-            }
+            while (nodes.length > 1) {
+                // Ordena para que os nós que tiveram MENOS W.O sejam pareados primeiro
+                // Aqueles que acabaram de ganhar W.O (mais byes) ficarão no topo e obrigatoriamente jogarão
+                nodes.sort((a, b) => b.byes - a.byes)
 
-            // C. Distribuir os jogadores de forma inteligente (Seeding)
-            // Se temos totalPlayers < n, alguns jogos terão BYE.
-            // Distribuímos 1 jogador por partida do Round 1 primeiro, depois os restantes.
-            const m = n / 2 // Número de partidas na Fase 1
-            for (let i = 0; i < m; i++) {
-                const match = matchesByRound[0][i]
-                match.player_a_id = shuffledPlayers[i] || null
-                match.player_b_id = shuffledPlayers[i + m] || null
+                let nextNodes = []
+                let i = 0
 
-                // Se o player B ficou nulo, é um BYE "Chapeu"
-                if (match.player_a_id && !match.player_b_id) {
-                    match.is_bye = true
-                    match.winner_id = match.player_a_id // O Player A passa direto
-                }
-            }
+                while (i < nodes.length) {
+                    if (i + 1 < nodes.length) {
+                        // Partida Normal
+                        const mId = crypto.randomUUID()
+                        const m = {
+                            id: mId,
+                            tournament_id: tournamentId,
+                            phase: phase,
+                            phase_name: `Fase ${phase}`,
+                            is_repescagem: false,
+                            player_a_id: nodes[i].type === 'player' ? nodes[i].id : null,
+                            player_b_id: nodes[i + 1].type === 'player' ? nodes[i + 1].id : null,
+                            winner_id: null,
+                            is_bye: false,
+                            next_match_id: null,
+                            loser_match_id: null,
+                            score_a: 0,
+                            score_b: 0,
+                            // metadata temp para linkar next_match_id depois
+                            _source_a: nodes[i],
+                            _source_b: nodes[i + 1]
+                        } as any
+                        allMatches.push(m)
 
-            // D. Propagar os BYEs para a Fase 2 (Efeito Dominó)
-            for (let r = 0; r < rounds - 1; r++) {
-                for (let i = 0; i < matchesByRound[r].length; i++) {
-                    const match = matchesByRound[r][i]
-                    if (match.winner_id && match.next_match_id) {
-                        const nextMatchIndex = Math.floor(i / 2)
-                        const nextMatch = matchesByRound[r + 1][nextMatchIndex]
-                        const isPlayerA = i % 2 === 0
-                        if (isPlayerA) nextMatch.player_a_id = match.winner_id
-                        else nextMatch.player_b_id = match.winner_id
+                        // O vencedor desta partida se torna o novo nó
+                        nextNodes.push({ type: 'match', id: mId, byes: 0 })
+
+                        // Linkar das rodadas anteriores para esta partida
+                        if (nodes[i].type === 'match') {
+                            const prev = allMatches.find(x => x.id === nodes[i].id)
+                            if (prev) prev.next_match_id = mId
+                        }
+                        if (nodes[i + 1].type === 'match') {
+                            const prev = allMatches.find(x => x.id === nodes[i + 1].id)
+                            if (prev) prev.next_match_id = mId
+                        }
+
+                        i += 2
+                    } else {
+                        // Impar (W.O / Passagem Direta)
+                        const n = nodes[i]
+                        n.byes += 1
+
+                        const mId = crypto.randomUUID()
+                        const m = {
+                            id: mId,
+                            tournament_id: tournamentId,
+                            phase: phase,
+                            phase_name: `Fase ${phase}`,
+                            is_repescagem: false,
+                            player_a_id: n.type === 'player' ? n.id : null,
+                            player_b_id: null,
+                            winner_id: n.type === 'player' ? n.id : null,
+                            is_bye: true, // W.O!
+                            next_match_id: null,
+                            loser_match_id: null,
+                            score_a: 0,
+                            score_b: 0,
+                            _source_a: n
+                        } as any
+                        allMatches.push(m)
+
+                        // O nó que "passou" se torna o adversário na próxima fase
+                        // Carrega o contador de byes para o próximo nó
+                        nextNodes.push({ type: 'match', id: mId, byes: n.byes })
+
+                        if (n.type === 'match') {
+                            const prev = allMatches.find(x => x.id === n.id)
+                            if (prev) prev.next_match_id = mId
+                        }
+
+                        i++
                     }
-                    allMatches.push(match)
                 }
+                nodes = nextNodes
+                phase++
             }
-            // Adicionar a última rodada no array final
-            matchesByRound[rounds - 1].forEach(m => allMatches.push(m))
 
-            // E. Inserir todos de uma vez
+            // Renomear fases (Semifinal e Final)
+            const totalPhases = phase - 1
+            allMatches.forEach(m => {
+                if (m.phase === totalPhases) m.phase_name = 'Final'
+                else if (m.phase === totalPhases - 1 && totalPhases > 2) m.phase_name = 'Semifinal'
+
+                // Limpar campos temporários necessários para a DB
+                delete m._source_a
+                delete m._source_b
+            })
+
             const { error: matchesError } = await supabase.from('matches').insert(allMatches)
-            if (matchesError) return { success: false, error: 'Erro ao gerar árvore fixa: ' + matchesError.message }
+            if (matchesError) return { success: false, error: 'Erro ao gerar árvore fixa customizada: ' + matchesError.message }
 
         } else {
             // == SORTEIO FASE-A-FASE (Random Draw) ==

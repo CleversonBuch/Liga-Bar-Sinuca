@@ -143,6 +143,10 @@ async function _fetchEvolutionData() {
     const currentYear = now.getFullYear()
     const currentMonth = now.getMonth() + 1
 
+    // ==========================================
+    // 1. DESCOBRIR OS TOP 5 JOGADORES ATUAIS
+    // ==========================================
+
     // Buscar ranking geral do mês atual diretamente (sem chamar getRankings)
     const { data: rawRank3 } = await supabase
         .from('rankings')
@@ -176,9 +180,13 @@ async function _fetchEvolutionData() {
         .sort((a, b) => b.points - a.points)
         .slice(0, 5)
 
-    if (top5Players.length === 0) return []
+    if (top5Players.length === 0) return { months: [], matches: [] }
 
-    // Buscar rankings dos últimos 4 meses para esses 5 jogadores
+    const top5Ids = top5Players.map(p => p.id)
+
+    // ==========================================
+    // 2. DADOS DE "MESES" (Histórico Oficial de Pontos)
+    // ==========================================
     const months = []
     for (let i = 3; i >= 0; i--) {
         let m = currentMonth - i
@@ -214,7 +222,59 @@ async function _fetchEvolutionData() {
         return dataPoint
     })
 
-    return chartData
+    // ==========================================
+    // 3. DADOS DE "PARTIDAS" (Evolução Acumulativa Granular)
+    // ==========================================
+    // Buscar as últimas N partidas onde o vencedor é um do Top 5
+    const { data: matchesData } = await supabase
+        .from('matches')
+        .select('id, winner_id, finished_at')
+        .in('winner_id', top5Ids)
+        .not('finished_at', 'is', null)
+        .order('finished_at', { ascending: true })
+
+    // Para evitar poluição absurda em servidores gigantes,
+    // podemos fatiar as ultimas X partidas (ex: 100), se for o caso.
+    const lastNMatches = (matchesData || []).slice(-150);
+
+    // Inicializar placar cumulativo (Vitórias)
+    const cumulativeWins: Record<string, number> = {}
+    top5Ids.forEach(id => cumulativeWins[id] = 0)
+
+    // Redutor para agrupar partidas por "semana do ano"
+    function getWeekNumber(d: Date) {
+        const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+        return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    }
+
+    const matchChartData: any[] = []
+
+    lastNMatches.forEach((match, index) => {
+        const winnerId = match.winner_id;
+        if (winnerId && cumulativeWins[winnerId] !== undefined) {
+            cumulativeWins[winnerId] += 1;
+        }
+
+        const dateObj = new Date(match.finished_at);
+        const dataPoint: any = {
+            name: `P${index + 1}`,
+            fullDate: match.finished_at,
+            week: `${dateObj.getFullYear()}-W${getWeekNumber(dateObj)}`
+        };
+
+        top5Players.forEach(p => {
+            dataPoint[p.name] = cumulativeWins[p.id]
+        })
+
+        matchChartData.push(dataPoint);
+    });
+
+    return {
+        months: chartData,
+        matches: matchChartData
+    }
 }
 
 export const getEvolutionData = unstable_cache(

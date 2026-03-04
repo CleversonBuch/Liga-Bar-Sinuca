@@ -24,8 +24,8 @@ export async function getTournamentData(tournamentId: string) {
         .from('matches')
         .select(`
       *,
-      player_a:player_a_id(id, name, nickname),
-      player_b:player_b_id(id, name, nickname),
+      player_a:player_a_id(id, name, nickname, photo_url),
+      player_b:player_b_id(id, name, nickname, photo_url),
       winner:winner_id(id, name, nickname),
       table:table_id(id, number, name)
     `)
